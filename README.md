@@ -1,6 +1,6 @@
 # Style-Bert-VITS2
 
-**利用の際は必ず[お願いとデフォルトモデルの利用規約](/docs/TERMS_OF_USE.md)をお読みください。**
+**Por favor, leia os [Termos de Uso e Avisos](/docs/TERMS_OF_USE.md) antes de usar.**
 
 Bert-VITS2 with more controllable voice styles.
 
@@ -8,21 +8,21 @@ https://github.com/litagin02/Style-Bert-VITS2/assets/139731664/e853f9a2-db4a-420
 
 You can install via `pip install style-bert-vits2` (inference only), see [library.ipynb](/library.ipynb) for example usage.
 
-- **解説チュートリアル動画** [YouTube](https://youtu.be/aTUSzgDl1iY)　[ニコニコ動画](https://www.nicovideo.jp/watch/sm43391524)
+- **Vídeo tutorial explicativo** [YouTube](https://youtu.be/aTUSzgDl1iY) [Vídeo NicoNico](https://www.nicovideo.jp/watch/sm43391524)
 - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/litagin02/Style-Bert-VITS2/blob/master/colab.ipynb)
-- [**よくある質問** (FAQ)](/docs/FAQ.md)
+- [**Perguntas Frequentes** (FAQ)](/docs/FAQ.md)
 - [🤗 オンラインデモはこちらから](https://huggingface.co/spaces/litagin/Style-Bert-VITS2-Editor-Demo)
-- [Zennの解説記事](https://zenn.dev/litagin/articles/034819a5256ff4)
+- [Artigo explicativo no Zenn](https://zenn.dev/litagin/articles/034819a5256ff4)
 
-- [**リリースページ**](https://github.com/litagin02/Style-Bert-VITS2/releases/)、[更新履歴](/docs/CHANGELOG.md)
-  - 2025-08-24: Ver 2.7.0: 外部ライブラリ [Aivis Project](https://aivis-project.com/) 等との連携のため、ONNX変換のGUI追加、また音声認識モデルとして `litagin/anime-whisper` の追加等
-  - 2024-09-09: Ver 2.6.1: Google colabでうまく学習できない等のバグ修正のみ
-  - 2024-06-16: Ver 2.6.0 (モデルの差分マージ・加重マージ・ヌルモデルマージの追加、使い道については[この記事](https://zenn.dev/litagin/articles/1297b1dc7bdc79)参照)
-  - 2024-06-14: Ver 2.5.1 (利用規約をお願いへ変更したのみ)
-  - 2024-06-02: Ver 2.5.0 (**[利用規約](/docs/TERMS_OF_USE.md)の追加**、フォルダ分けからのスタイル生成、小春音アミ・あみたろモデルの追加、インストールの高速化等)
-  - 2024-03-16: ver 2.4.1 (**batファイルによるインストール方法の変更**)
-  - 2024-03-15: ver 2.4.0 (大規模リファクタリングや種々の改良、ライブラリ化)
-  - 2024-02-26: ver 2.3 (辞書機能とエディター機能)
+- [**Página de lançamentos**](https://github.com/litagin02/Style-Bert-VITS2/releases/)、[Histórico de atualizações](/docs/CHANGELOG.md)
+  - 2025-08-24: Versão 2.7.0: Adição de GUI para conversão ONNX e integração com bibliotecas externas como [Aivis Project](https://aivis-project.com/), além de incluir o modelo de reconhecimento de voz `litagin/anime-whisper`.
+  - 2024-09-09: Versão 2.6.1: Correção de bugs que impediam o treinamento adequado no Google Colab.
+  - 2024-06-16: Versão 2.6.0 (adição de mesclagem de diferenças de modelo, mesclagem ponderada e mesclagem de modelo nulo; veja [este artigo](https://zenn.dev/litagin/articles/1297b1dc7bdc79) para detalhes de uso).
+  - 2024-06-14: Versão 2.5.1 (apenas mudou os termos de uso para um aviso).
+  - 2024-06-02: Versão 2.5.0 (**Adição dos [Termos de Uso](/docs/TERMS_OF_USE.md)**, geração de estilos a partir de organização de pastas, inclusão dos modelos 小春音アミ・あみたろ, e aceleração da instalação).
+  - 2024-03-16: Versão 2.4.1 (**alteração do método de instalação via arquivos .bat**).
+  - 2024-03-15: Versão 2.4.0 (refatoração em larga escala, várias melhorias e modularização como biblioteca).
+  - 2024-02-26: Versão 2.3 (funcionalidade de dicionário e editor).
   - 2024-02-09: ver 2.2
   - 2024-02-07: ver 2.1
   - 2024-02-03: ver 2.0 (JP-Extra)
@@ -33,47 +33,47 @@ You can install via `pip install style-bert-vits2` (inference only), see [librar
 
 This repository is based on [Bert-VITS2](https://github.com/fishaudio/Bert-VITS2) v2.1 and Japanese-Extra, so many thanks to the original author!
 
-**概要**
+**Visão geral**
 
-- 入力されたテキストの内容をもとに感情豊かな音声を生成する[Bert-VITS2](https://github.com/fishaudio/Bert-VITS2)のv2.1とJapanese-Extraを元に、感情や発話スタイルを強弱込みで自由に制御できるようにしたものです。
-- GitやPythonがない人でも（Windowsユーザーなら）簡単にインストールでき、学習もできます (多くを[EasyBertVits2](https://github.com/Zuntan03/EasyBertVits2/)からお借りしました)。またGoogle Colabでの学習もサポートしています: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/litagin02/Style-Bert-VITS2/blob/master/colab.ipynb)
-- 音声合成のみに使う場合は、グラボがなくてもCPUで動作します。
-- 音声合成のみに使う場合、Pythonライブラリとして`pip install style-bert-vits2`でインストールできます。例は[library.ipynb](/library.ipynb)を参照してください。
-- 他との連携に使えるAPIサーバーも同梱しています ([@darai0512](https://github.com/darai0512) 様によるPRです、ありがとうございます)。
-- 元々「楽しそうな文章は楽しそうに、悲しそうな文章は悲しそうに」読むのがBert-VITS2の強みですので、スタイル指定がデフォルトでも感情豊かな音声を生成することができます。
+- Gera áudio emocionalmente rico a partir do texto inserido, baseado no Bert-VITS2 v2.1 e Japanese-Extra, permitindo controle livre de emoções e estilos de fala, inclusive intensidade.
+- Mesmo sem Git ou Python (usuários Windows), a instalação é simples e o treinamento é possível (grande parte baseada no [EasyBertVits2](https://github.com/Zuntan03/EasyBertVits2/)). O treinamento também é suportado no Google Colab: [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/litagin02/Style-Bert-VITS2/blob/master/colab.ipynb)
+- Para uso apenas de síntese de voz, funciona em CPU mesmo sem GPU.
+- Para síntese de voz somente, pode ser instalado como biblioteca Python via `pip install style-bert-vits2`. Veja o exemplo em [library.ipynb](/library.ipynb).
+- Também inclui um servidor API para integração com outros sistemas (contribuição de [@darai0512](https://github.com/darai0512)).
+- Originalmente, Bert-VITS2 destaca-se por ler "textos alegres de forma alegre e textos tristes de forma triste", permitindo gerar áudio rico em emoções mesmo com estilos padrão.
 
 
-## 使い方
+## Como usar
 
-- CLIでの使い方は[こちら](/docs/CLI.md)を参照してください。
-- [よくある質問](/docs/FAQ.md)も参照してください。
+- Consulte [aqui](/docs/CLI.md) para instruções de uso via CLI.
+- Veja também as [Perguntas Frequentes](/docs/FAQ.md).
 
-### 動作環境
+### Ambiente de execução
 
-各UIとAPI Serverにおいて、Windows コマンドプロンプト・WSL2・Linux(Ubuntu Desktop)での動作を確認しています(WSLでのパス指定は相対パスなど工夫ください)。NVidiaのGPUが無い場合は学習はできませんが音声合成とマージは可能です。
+Testado em Windows Command Prompt, WSL2 e Linux (Ubuntu Desktop) para UI e servidor API (ajuste caminhos relativos no WSL). Sem GPU Nvidia, o treinamento não funciona, mas síntese e mesclagem de áudio ainda são possíveis.
 
 ### インストール
 
-Pythonライブラリとしてのpipでのインストールや使用例は[library.ipynb](/library.ipynb)を参照してください。
+Para instalar via pip como biblioteca Python e exemplos de uso, veja [library.ipynb](/library.ipynb).
 
-#### GitやPythonに馴染みが無い方
+#### Para quem não está familiarizado com Git ou Python
 
-Windowsを前提としています。
+Baseado em Windows.
 
-1. [このzipファイル](https://github.com/litagin02/Style-Bert-VITS2/releases/latest/download/sbv2.zip)を**パスに日本語や空白が含まれない場所に**ダウンロードして展開します。
-  - グラボがある方は、`Install-Style-Bert-VITS2.bat`をダブルクリックします。
-  - グラボがない方は、`Install-Style-Bert-VITS2-CPU.bat`をダブルクリックします。CPU版では学習はできませんが、音声合成とマージは可能です。
-2. 待つと自動で必要な環境がインストールされます。
-3. その後、自動的に音声合成するためのエディターが起動したらインストール成功です。デフォルトのモデルがダウンロードされるているので、そのまま遊ぶことができます。
+1. Baixe o [arquivo zip](https://github.com/litagin02/Style-Bert-VITS2/releases/latest/download/sbv2.zip) para um diretório sem caracteres japoneses ou espaços e extraia.
+  - Se possuir GPU, clique duas vezes em `Install-Style-Bert-VITS2.bat`.
+  - Se não houver GPU, clique duas vezes em `Install-Style-Bert-VITS2-CPU.bat`. A versão CPU não permite treinamento, mas suporta síntese e mesclagem.
+2. Aguarde enquanto o ambiente necessário é instalado automaticamente.
+3. Quando o editor de síntese de voz iniciar automaticamente, a instalação foi bem-sucedida. O modelo padrão já está baixado, pronto para uso.
 
-またアップデートをしたい場合は、`Update-Style-Bert-VITS2.bat`をダブルクリックしてください。
+Para atualizar, clique duas vezes em `Update-Style-Bert-VITS2.bat`.
 
-ただし2024-03-16の**2.4.1**バージョン未満からのアップデートの場合は、全てを削除してから再びインストールする必要があります。申し訳ありません。移行方法は[CHANGELOG.md](/docs/CHANGELOG.md)を参照してください。
+Observação: ao atualizar de versões anteriores à **2.4.1** (antes de 2024-03-16), será necessário remover tudo e reinstalar. Consulte o procedimento em [CHANGELOG.md](/docs/CHANGELOG.md).
 
-#### GitやPython使える人
+#### Para quem tem experiência com Git e Python
 
-Pythonの仮想環境・パッケージ管理ツールである[uv](https://github.com/astral-sh/uv)がpipより高速なので、それを使ってインストールすることをお勧めします。
-（使いたくない場合は通常のpipでも大丈夫です。）
+Recomendamos usar o gerenciador de pacotes [uv](https://github.com/astral-sh/uv), que é mais rápido que o pip, para criar ambientes virtuais Python.
+(Se preferir, o pip tradicional também funciona.)
 
 ```bash
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
@@ -83,20 +83,20 @@ uv venv venv
 venv\Scripts\activate
 uv pip install "torch<2.4" "torchaudio<2.4" --index-url https://download.pytorch.org/whl/cu118
 uv pip install -r requirements.txt
-python initialize.py  # 必要なモデルとデフォルトTTSモデルをダウンロード
+python initialize.py  # Baixa os modelos necessários e o modelo TTS padrão
 ```
-最後を忘れずに。
+Não se esqueça do passo final.
 
-### 音声合成
+### Síntese de voz
 
-音声合成エディターは`Editor.bat`をダブルクリックか、`python server_editor.py --inbrowser`すると起動します（`--device cpu`でCPUモードで起動）。画面内で各セリフごとに設定を変えて原稿を作ったり、保存や読み込みや辞書の編集等ができます。
-インストール時にデフォルトのモデルがダウンロードされているので、学習していなくてもそれを使うことができます。
+O editor de síntese de voz inicia ao clicar duas vezes em `Editor.bat` ou executar `python server_editor.py --inbrowser` (use `--device cpu` para modo CPU). Permite ajustar cada linha, salvar, carregar e editar dicionários.
+Mesmo sem treinamento, o modelo padrão baixado na instalação pode ser usado.
 
-エディター部分は[別リポジトリ](https://github.com/litagin02/Style-Bert-VITS2-Editor)に分かれています。
+A parte do editor está em um [repositório separado](https://github.com/litagin02/Style-Bert-VITS2-Editor).
 
-バージョン2.2以前での音声合成WebUIは、`App.bat`をダブルクリックか、`python app.py`するとWebUIが起動します。または`Inference.bat`でも音声合成単独タブが開きます。
+Para versões anteriores à 2.2, a WebUI de síntese de voz inicia ao clicar em `App.bat` ou executar `python app.py`. Também é possível abrir a aba de síntese única via `Inference.bat`.
 
-音声合成に必要なモデルファイルたちの構造は以下の通りです（手動で配置する必要はありません）。
+A estrutura dos arquivos de modelo necessários para síntese de voz é a seguinte (não requer posicionamento manual).
 ```
 model_assets
 ├── your_model
@@ -108,80 +108,73 @@ model_assets
 └── another_model
     ├── ...
 ```
-このように、推論には`config.json`と`*.safetensors`と`style_vectors.npy`が必要です。モデルを共有する場合は、この3つのファイルを共有してください。
+Para inferência, são necessários `config.json`, arquivos `*.safetensors` e `style_vectors.npy`. Ao compartilhar um modelo, inclua esses três arquivos.
 
-このうち`style_vectors.npy`はスタイルを制御するために必要なファイルで、学習の時にデフォルトで平均スタイル「Neutral」が生成されます。
-複数スタイルを使ってより詳しくスタイルを制御したい方は、下の「スタイルの生成」を参照してください（平均スタイルのみでも、学習データが感情豊かならば十分感情豊かな音声が生成されます）。
 
-### 学習
+O treinamento requer vários arquivos de áudio de cerca de 2 a 14 segundos e seus dados de transcrição.
 
-- CLIでの学習の詳細は[こちら](docs/CLI.md)を参照してください。
-- paperspace上での学習の詳細は[こちら](docs/paperspace.md)、colabでの学習は[こちら](http://colab.research.google.com/github/litagin02/Style-Bert-VITS2/blob/master/colab.ipynb)を参照してください。
+- Se você já tiver arquivos de áudio divididos e dados de transcrição de um corpus existente, etc., poderá usá-los como estão (modificando o arquivo de transcrição, se necessário). Consulte "WebUI de Treinamento" abaixo.
+- Caso contrário, se você tiver apenas arquivos de áudio (de qualquer duração), incluímos uma ferramenta para criar um conjunto de dados a partir deles para uso imediato no treinamento.
 
-学習には2-14秒程度の音声ファイルが複数と、それらの書き起こしデータが必要です。
+#### Criação de Dataset
 
-- 既存コーパスなどですでに分割された音声ファイルと書き起こしデータがある場合はそのまま（必要に応じて書き起こしファイルを修正して）使えます。下の「学習WebUI」を参照してください。
-- そうでない場合、（長さは問わない）音声ファイルのみがあれば、そこから学習にすぐに使えるようにデータセットを作るためのツールを同梱しています。
+- Na guia "Criação de Dataset" da WebUI, aberta clicando duas vezes em `App.bat` ou executando `python app.py`, você pode fatiar arquivos de áudio em comprimentos apropriados e transcrevê-los automaticamente. Alternativamente, clicar duas vezes em `Dataset.bat` abrirá essa guia isoladamente.
+- Após seguir as instruções, você pode prosseguir diretamente para o treinamento na guia "Treinamento" abaixo.
 
-#### データセット作り
+#### WebUI de Treinamento
 
-- `App.bat`をダブルクリックか`python app.py`したところの「データセット作成」タブから、音声ファイルを適切な長さにスライスし、その後に文字の書き起こしを自動で行えます。または`Dataset.bat`をダブルクリックでもその単独タブが開きます。
-- 指示に従った後、下の「学習」タブでそのまま学習を行うことができます。
+- Siga as instruções na guia "Treinamento" da WebUI, aberta clicando duas vezes em `App.bat` ou executando `python app.py`. Alternativamente, clicar duas vezes em `Train.bat` abrirá essa guia isoladamente.
 
-#### 学習WebUI
+### Geração de Estilo
 
-- `App.bat`をダブルクリックか`python app.py`して開くWebUIの「学習」タブから指示に従ってください。または`Train.bat`をダブルクリックでもその単独タブが開きます。
-
-### スタイルの生成
-
-- デフォルトでは、デフォルトスタイル「Neutral」の他、学習フォルダのフォルダ分けに応じたスタイルが生成されます。
-- それ以外の方法で手動でスタイルを作成したい人向けです。
-- `App.bat`をダブルクリックか`python app.py`して開くWebUIの「スタイル作成」タブから、音声ファイルを使ってスタイルを生成できます。または`StyleVectors.bat`をダブルクリックでもその単独タブが開きます。
-- 学習とは独立しているので、学習中でもできるし、学習が終わっても何度もやりなおせます（前処理は終わらせている必要があります）。
+- Por padrão, além do estilo padrão "Neutral", estilos correspondentes à divisão de pastas na pasta de treinamento são gerados.
+- Isto é para quem deseja criar estilos manualmente por outros métodos.
+- Você pode gerar estilos usando arquivos de áudio na guia "Criação de Estilo" da WebUI, aberta clicando duas vezes em `App.bat` ou executando `python app.py`. Alternativamente, clicar duas vezes em `StyleVectors.bat` abrirá essa guia isoladamente.
+- Como é independente do treinamento, pode ser feito durante o treinamento ou refeito várias vezes após o término do treinamento (o pré-processamento deve estar concluído).
 
 ### API Server
 
-構築した環境下で`python server_fastapi.py`するとAPIサーバーが起動します。
-API仕様は起動後に`/docs`にて確認ください。
+Executar `python server_fastapi.py` no ambiente construído iniciará o servidor API.
+As especificações da API podem ser verificadas em `/docs` após a inicialização.
 
-- 入力文字数はデフォルトで100文字が上限となっています。これは`config.yml`の`server.limit`で変更できます。
-- デフォルトではCORS設定を全てのドメインで許可しています。できる限り、`config.yml`の`server.origins`の値を変更し、信頼できるドメインに制限ください(キーを消せばCORS設定を無効にできます)。
+- O limite de caracteres de entrada é 100 por padrão. Isso pode ser alterado em `server.limit` no `config.yml`.
+- Por padrão, as configurações CORS permitem todos os domínios. Sempre que possível, altere o valor de `server.origins` no `config.yml` para restringir a domínios confiáveis (apagar a chave desativará as configurações CORS).
 
-また音声合成エディターのAPIサーバーは`python server_editor.py`で起動します。があまりまだ整備をしていません。[エディターのリポジトリ](https://github.com/litagin02/Style-Bert-VITS2-Editor)から必要な最低限のAPIしか現在は実装していません。
+Além disso, o servidor API do editor de síntese de voz é iniciado com `python server_editor.py`. Mas ainda não está muito bem mantido. Atualmente, apenas a API mínima necessária do [repositório do editor](https://github.com/litagin02/Style-Bert-VITS2-Editor) está implementada.
 
-音声合成エディターのウェブデプロイについては[このDockerfile](Dockerfile.deploy)を参考にしてください。
+Para implantação web do editor de síntese de voz, consulte [este Dockerfile](Dockerfile.deploy).
 
 ### マージ
 
-2つのモデルを、「声質」「声の高さ」「感情表現」「テンポ」の4点で混ぜ合わせて、新しいモデルを作ったり、また「あるモデルに、別の2つのモデルの差分を足す」等の操作ができます。
-`App.bat`をダブルクリックか`python app.py`して開くWebUIの「マージ」タブから、2つのモデルを選択してマージすることができます。または`Merge.bat`をダブルクリックでもその単独タブが開きます。
+Você pode criar um novo modelo misturando dois modelos em termos de "qualidade de voz", "tom de voz", "expressão emocional" e "tempo", ou realizar operações como "adicionar a diferença entre dois outros modelos a um modelo".
+Você pode mesclar dois modelos selecionando-os na guia "Mesclagem" da WebUI, que pode ser aberta clicando duas vezes em `App.bat` ou executando `python app.py`. Alternativamente, clicar duas vezes em `Merge.bat` abrirá essa guia isoladamente.
 
-### ONNX変換
+### Conversão ONNX
 
-タブの「ONNX変換」または `ConvertONNX.bat` から、学習済みsafetensorsファイルをONNX形式に変換することができます。これは外部ライブラリ等でONNX形式ファイルが必要な場合に使えます。例えば [Aivis Project](https://aivis-project.com/) では [AIVM Generator](https://aivm-generator.aivis-project.com/) を使って、safetensorsファイルとONNXファイルからAivis Speech用のモデルを作成できます。
+Você pode converter arquivos safetensors treinados para o formato ONNX na guia "Conversão ONNX" ou usando `ConvertONNX.bat`. Isso é útil quando arquivos no formato ONNX são necessários para bibliotecas externas. Por exemplo, no [Aivis Project](https://aivis-project.com/), você pode usar o [AIVM Generator](https://aivm-generator.aivis-project.com/) para criar modelos para o Aivis Speech a partir de arquivos safetensors e ONNX.
 
-### 自然性評価
+### Avaliação de Naturalidade
 
-学習結果のうちどのステップ数がいいかの「一つの」指標として、[SpeechMOS](https://github.com/tarepan/SpeechMOS) を使うスクリプトを用意しています:
+Como "um" indicador de qual número de passos é melhor entre os resultados do treinamento, preparamos um script que usa [SpeechMOS](https://github.com/tarepan/SpeechMOS):
 ```bash
 python speech_mos.py -m <model_name>
 ```
-ステップごとの自然性評価が表示され、`mos_results`フォルダの`mos_{model_name}.csv`と`mos_{model_name}.png`に結果が保存される。読み上げさせたい文章を変えたかったら中のファイルを弄って各自調整してください。またあくまでアクセントや感情表現や抑揚を全く考えない基準での評価で、目安のひとつなので、実際に読み上げさせて選別するのが一番だと思います。
+A avaliação de naturalidade para cada passo é exibida, e os resultados são salvos em `mos_{model_name}.csv` e `mos_{model_name}.png` na pasta `mos_results`. Se você quiser mudar o texto a ser lido, modifique o arquivo e ajuste-o você mesmo. Além disso, esta é apenas uma avaliação baseada em critérios que não consideram sotaque, expressão emocional ou entonação, servindo apenas como um guia, então acho que é melhor selecionar ouvindo a leitura real.
 
-## Bert-VITS2との関係
+## Relação com Bert-VITS2
 
-基本的にはBert-VITS2のモデル構造を少し改造しただけです。[旧事前学習モデル](https://huggingface.co/litagin/Style-Bert-VITS2-1.0-base)も[JP-Extraの事前学習モデル](https://huggingface.co/litagin/Style-Bert-VITS2-2.0-base-JP-Extra)も、実質Bert-VITS2 v2.1 or JP-Extraと同じものを使用しています（不要な重みを削ってsafetensorsに変換したもの）。
+Basicamente, é apenas uma ligeira modificação da estrutura do modelo Bert-VITS2. Tanto o [modelo pré-treinado antigo](https://huggingface.co/litagin/Style-Bert-VITS2-1.0-base) quanto o [modelo pré-treinado JP-Extra](https://huggingface.co/litagin/Style-Bert-VITS2-2.0-base-JP-Extra) usam essencialmente o mesmo que Bert-VITS2 v2.1 ou JP-Extra (com pesos desnecessários removidos e convertidos para safetensors).
 
-具体的には以下の点が異なります。
+Especificamente, os seguintes pontos são diferentes:
 
-- [EasyBertVits2](https://github.com/Zuntan03/EasyBertVits2)のように、PythonやGitを知らない人でも簡単に使える。
-- 感情埋め込みのモデルを変更（256次元の[wespeaker-voxceleb-resnet34-LM](https://huggingface.co/pyannote/wespeaker-voxceleb-resnet34-LM)へ、感情埋め込みというよりは話者識別のための埋め込み）
-- 感情埋め込みもベクトル量子化を取り払い、単なる全結合層に。
-- スタイルベクトルファイル`style_vectors.npy`を作ることで、そのスタイルを使って効果の強さも連続的に指定しつつ音声を生成することができる。
-- 各種WebUIを作成
-- bf16での学習のサポート
-- safetensors形式のサポート、デフォルトでsafetensorsを使用するように
-- その他軽微なbugfixやリファクタリング
+- Como o [EasyBertVits2](https://github.com/Zuntan03/EasyBertVits2), é fácil de usar mesmo para quem não conhece Python ou Git.
+- Modelo de embedding de emoção alterado (para [wespeaker-voxceleb-resnet34-LM](https://huggingface.co/pyannote/wespeaker-voxceleb-resnet34-LM) de 256 dimensões; mais um embedding para identificação de falante do que embedding de emoção)
+- A quantização vetorial também foi removida do embedding de emoção, tornando-se uma simples camada totalmente conectada.
+- Ao criar o arquivo de vetor de estilo `style_vectors.npy`, você pode gerar voz usando esse estilo enquanto especifica continuamente a intensidade do efeito.
+- Várias WebUIs criadas
+- Suporte para treinamento em bf16
+- Suporte ao formato safetensors, usando safetensors por padrão
+- Outras pequenas correções de bugs e refatoração
 
 
 ## References
@@ -217,20 +210,20 @@ VITS2 Backbone with multilingual bert
 
 For quick guide, please refer to `webui_preprocess.py`.
 
-简易教程请参见 `webui_preprocess.py`。
+Para um tutorial simples, consulte `webui_preprocess.py`.
 
-## 请注意，本项目核心思路来源于[anyvoiceai/MassTTS](https://github.com/anyvoiceai/MassTTS) 一个非常好的tts项目
-## MassTTS的演示demo为[ai版峰哥锐评峰哥本人,并找回了在金三角失落的腰子](https://www.bilibili.com/video/BV1w24y1c7z9)
+## Observe que a ideia central deste projeto vem de [anyvoiceai/MassTTS](https://github.com/anyvoiceai/MassTTS), um excelente projeto de TTS
+## A demonstração do MassTTS está em [ai版峰哥锐评峰哥本人,并找回了在金三角失落的腰子](https://www.bilibili.com/video/BV1w24y1c7z9)
 
 [//]: # (## 本项目与[PlayVoice/vits_chinese]&#40;https://github.com/PlayVoice/vits_chinese&#41; 没有任何关系)
 
 [//]: # ()
 [//]: # (本仓库来源于之前朋友分享了ai峰哥的视频，本人被其中的效果惊艳，在自己尝试MassTTS以后发现fs在音质方面与vits有一定差距，并且training的pipeline比vits更复杂，因此按照其思路将bert)
 
-## 成熟的旅行者/开拓者/舰长/博士/sensei/猎魔人/喵喵露/V应当参阅代码自己学习如何训练。
+## Viajantes/Pioneiros/Capitães/Doutores/Senseis/Witchers/MiaoMiaoLu/Vs experientes devem consultar o código e aprender a treinar por conta própria.
 
-### 严禁将此项目用于一切违反《中华人民共和国宪法》，《中华人民共和国刑法》，《中华人民共和国治安管理处罚法》和《中华人民共和国民法典》之用途。
-### 严禁用于任何政治相关用途。
+### É estritamente proibido usar este projeto para qualquer finalidade que viole a Constituição, o Código Penal, a Lei de Punição da Administração de Segurança Pública e o Código Civil da República Popular da China.
+### É estritamente proibido o uso para quaisquer fins políticos.
 #### Video:https://www.bilibili.com/video/BV1hp4y1K78E
 #### Demo:https://www.bilibili.com/video/BV1TF411k78w
 #### QQ Group：815818430
@@ -243,7 +236,7 @@ For quick guide, please refer to `webui_preprocess.py`.
 + [emotional-vits](https://github.com/innnky/emotional-vits)
 + [fish-speech](https://github.com/fishaudio/fish-speech)
 + [Bert-VITS2-UI](https://github.com/jiangyuxiaoxiao/Bert-VITS2-UI)
-## 感谢所有贡献者作出的努力
+## Obrigado a todos os colaboradores por seus esforços
 <a href="https://github.com/fishaudio/Bert-VITS2/graphs/contributors" target="_blank">
   <img src="https://contrib.rocks/image?repo=fishaudio/Bert-VITS2"/>
 </a>

@@ -12,7 +12,7 @@ def call_convert_onnx(
     model: str,
 ):
     if model == "":
-        return "Error: モデル名を入力してください。"
+        return "Error: Por favor, insira o nome do modelo."
     logger.info("Start converting model to onnx...")
     cmd = [
         "convert_onnx.py",
@@ -22,16 +22,16 @@ def call_convert_onnx(
     success, message = run_script_with_log(cmd, ignore_warning=True)
     if not success:
         return f"Error: {message}"
-    return "ONNX変換が完了しました。"
+    return "Conversão para ONNX concluída."
 
 
 initial_md = """
-safetensors形式のモデルをONNX形式に変換します。
-このONNXモデルは対応外部ライブラリで利用できます。例えば [AIVM Generator](https://aivm-generator.aivis-project.com/) でさらにAIVM形式・AIVMX形式に変換すると [AivisSpeech](https://aivis-project.com/) で利用できます。
+Converte modelos no formato safetensors para o formato ONNX.
+Este modelo ONNX pode ser usado em bibliotecas externas compatíveis. Por exemplo, se você convertê-lo para o formato AIVM ou AIVMX usando o [AIVM Generator](https://aivm-generator.aivis-project.com/), poderá usá-lo no [AivisSpeech](https://aivis-project.com/).
 
-**変換には5分以上ほどの時間がかかります**。進捗状況はターミナルのログを参照してください。
+**A conversão leva cerca de 5 minutos ou mais**. Consulte o log do terminal para ver o progresso.
 
-変換後は、選択したモデルと同じ名前で、拡張子が`.onnx`のファイルが生成されます。
+Após a conversão, um arquivo com o mesmo nome do modelo selecionado e extensão `.onnx` será gerado.
 """
 
 
@@ -42,11 +42,11 @@ def create_onnx_app(model_holder: TTSModelHolder) -> gr.Blocks:
     model_names = model_holder.model_names
     if len(model_names) == 0:
         logger.error(
-            f"モデルが見つかりませんでした。{model_holder.root_dir}にモデルを置いてください。"
+            f"Modelo não encontrado. Por favor, coloque o modelo em {model_holder.root_dir}."
         )
         with gr.Blocks() as app:
             gr.Markdown(
-                f"Error: モデルが見つかりませんでした。{model_holder.root_dir}にモデルを置いてください。"
+                f"Error: Modelo não encontrado. Por favor, coloque o modelo em {model_holder.root_dir}."
             )
         return app
     initial_id = 0
@@ -57,18 +57,18 @@ def create_onnx_app(model_holder: TTSModelHolder) -> gr.Blocks:
         with gr.Row():
             with gr.Column():
                 model_name = gr.Dropdown(
-                    label="モデル一覧",
+                    label="Lista de Modelos",
                     choices=model_names,
                     value=model_names[initial_id],
                 )
                 model_path = gr.Dropdown(
-                    label="モデルファイル",
+                    label="Arquivo do Modelo",
                     choices=initial_pth_files,
                     value=initial_pth_files[0],
                 )
-            refresh_button = gr.Button("更新")
-        convert_button = gr.Button("ONNX形式に変換", variant="primary")
-        info = gr.Textbox(label="情報")
+            refresh_button = gr.Button("Atualizar")
+        convert_button = gr.Button("Converter para ONNX", variant="primary")
+        info = gr.Textbox(label="Informação")
 
         model_name.change(
             model_holder.update_model_files_for_gradio,

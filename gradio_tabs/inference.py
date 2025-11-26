@@ -27,64 +27,64 @@ from style_bert_vits2.tts_model import NullModelParam, TTSModelHolder
 from style_bert_vits2.utils import torch_device_to_onnx_providers
 
 
-# pyopenjtalk_worker を起動
-## pyopenjtalk_worker は TCP ソケットサーバーのため、ここで起動する
+# Iniciar pyopenjtalk_worker
+## O pyopenjtalk_worker é um servidor TCP socket, portanto iniciamos aqui
 pyopenjtalk.initialize_worker()
 
-# Web UI での学習時の無駄な GPU VRAM 消費を避けるため、あえてここでは BERT モデルの事前ロードを行わない
-# データセットの BERT 特徴量は事前に bert_gen.py により抽出されているため、学習時に BERT モデルをロードしておく必要はない
-# BERT モデルの事前ロードは「ロード」ボタン押下時に実行される TTSModelHolder.get_model_for_gradio() 内で行われる
-# Web UI での学習時、音声合成タブの「ロード」ボタンを押さなければ、BERT モデルが VRAM にロードされていない状態で学習を開始できる
+# Para evitar consumo desnecessário de GPU VRAM durante o treinamento na Web UI, optamos por não pré-carregar o modelo BERT aqui
+# As características BERT do dataset são extraídas previamente por bert_gen.py, portanto não é necessário carregar o modelo BERT durante o treinamento
+# O pré-carregamento do modelo BERT ocorre dentro de TTSModelHolder.get_model_for_gradio() quando o botão "Carregar" é pressionado
+# Durante o treinamento na Web UI, se o botão "Carregar" da aba de síntese de voz não for pressionado, o modelo BERT não será carregado na VRAM ao iniciar o treinamento
 
 languages = [lang.value for lang in Languages]
 
-initial_text = "こんにちは、初めまして。あなたの名前はなんていうの？"
+initial_text = "Olá, prazer em conhecê-lo. Qual é o seu nome?"
 
 examples = [
     [initial_text, "JP"],
     [
-        """あなたがそんなこと言うなんて、私はとっても嬉しい。
-あなたがそんなこと言うなんて、私はとっても怒ってる。
-あなたがそんなこと言うなんて、私はとっても驚いてる。
-あなたがそんなこと言うなんて、私はとっても辛い。""",
+        """Você dizer isso me deixa muito feliz.
+Você dizer isso me deixa muito irritado.
+Você dizer isso me deixa muito surpreso.
+Você dizer isso me deixa muito triste.""",
         "JP",
     ],
     [  # ChatGPTに考えてもらった告白セリフ
-        """私、ずっと前からあなたのことを見てきました。あなたの笑顔、優しさ、強さに、心惹かれていたんです。
-友達として過ごす中で、あなたのことがだんだんと特別な存在になっていくのがわかりました。
-えっと、私、あなたのことが好きです！もしよければ、私と付き合ってくれませんか？""",
+        """Eu venho observando você há muito tempo. Seu sorriso, gentileza e força me cativaram.
+Ao passar tempo como amigo, percebi que você se tornou cada vez mais especial.
+Então, eu gosto de você! Se quiser, poderia namorar comigo?""",
         "JP",
     ],
     [  # 夏目漱石『吾輩は猫である』
-        """吾輩は猫である。名前はまだ無い。
-どこで生れたかとんと見当がつかぬ。なんでも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。
-吾輩はここで初めて人間というものを見た。しかもあとで聞くと、それは書生という、人間中で一番獰悪な種族であったそうだ。
-この書生というのは時々我々を捕まえて煮て食うという話である。""",
+        """Eu sou um gato. Ainda não tenho nome.
+Não tenho ideia de onde nasci. Só lembro de chorar "miau" em um lugar escuro e úmido.
+Foi aqui que vi um humano pela primeira vez. Mais tarde, ouvi dizer que ele era um estudante, a espécie mais agressiva entre os humanos.
+Dizem que esses estudantes às vezes nos capturam e nos cozinham para comer.""",
         "JP",
     ],
     [  # 梶井基次郎『桜の樹の下には』
-        """桜の樹の下には屍体が埋まっている！これは信じていいことなんだよ。
-何故って、桜の花があんなにも見事に咲くなんて信じられないことじゃないか。俺はあの美しさが信じられないので、このにさんにち不安だった。
-しかしいま、やっとわかるときが来た。桜の樹の下には屍体が埋まっている。これは信じていいことだ。""",
+        """Há um cadáver sob a cerejeira! Isso é algo em que se pode acreditar.
+Por que? Porque é incrível ver as flores de cerejeira florescerem tão lindamente. Eu não acreditava nessa beleza, então estava apreensivo.
+Mas agora, finalmente entendi. Há um cadáver sob a cerejeira. Isso é algo em que se pode acreditar.""",
         "JP",
     ],
     [  # ChatGPTと考えた、感情を表すセリフ
-        """やったー！テストで満点取れた！私とっても嬉しいな！
-どうして私の意見を無視するの？許せない！ムカつく！あんたなんか死ねばいいのに。
-あはははっ！この漫画めっちゃ笑える、見てよこれ、ふふふ、あはは。
-あなたがいなくなって、私は一人になっちゃって、泣いちゃいそうなほど悲しい。""",
+        """Consegui! Tirei nota máxima no teste! Estou muito feliz!
+Por que ignoram minha opinião? Não perdoo! Isso me irrita! Você deveria desaparecer.
+Haha! Esse mangá é muito engraçado, veja isso, haha.
+Sem você, fico tão triste que quase choro sozinho.""",
         "JP",
     ],
     [  # 上の丁寧語バージョン
-        """やりました！テストで満点取れましたよ！私とっても嬉しいです！
-どうして私の意見を無視するんですか？許せません！ムカつきます！あんたなんか死んでください。
-あはははっ！この漫画めっちゃ笑えます、見てくださいこれ、ふふふ、あはは。
-あなたがいなくなって、私は一人になっちゃって、泣いちゃいそうなほど悲しいです。""",
+        """Consegui! Tirei nota máxima no teste! Estou muito feliz!
+Por que ignoram minha opinião? Não perdoo! Isso me irrita! Por favor, desapareça.
+Haha! Esse mangá é muito engraçado, veja isso, haha.
+Sem você, fico tão triste que quase choro sozinho.""",
         "JP",
     ],
     [  # ChatGPTに考えてもらった音声合成の説明文章
-        """音声合成は、機械学習を活用して、テキストから人の声を再現する技術です。この技術は、言語の構造を解析し、それに基づいて音声を生成します。
-この分野の最新の研究成果を使うと、より自然で表現豊かな音声の生成が可能である。深層学習の応用により、感情やアクセントを含む声質の微妙な変化も再現することが出来る。""",
+        """Síntese de voz usa aprendizado de máquina para reproduzir a voz humana a partir de texto. Essa tecnologia analisa a estrutura da linguagem e gera áudio com base nisso.
+Usando os últimos avanços da pesquisa, é possível gerar áudio mais natural e expressivo. Deep learning permite reproduzir nuances de timbre, incluindo emoções e sotaques.""",
         "JP",
     ],
     [
@@ -92,71 +92,71 @@ examples = [
         "EN",
     ],
     [
-        "语音合成是人工制造人类语音。用于此目的的计算机系统称为语音合成器，可以通过软件或硬件产品实现。",
+        "Síntese de voz é a produção artificial de fala humana. Sistemas de computador para esse fim são chamados sintetizadores de voz e podem ser implementados via software ou hardware.",
         "ZH",
     ],
 ]
 
 initial_md = """
-- Ver 2.5で追加されたデフォルトの [`koharune-ami`（小春音アミ）モデル](https://huggingface.co/litagin/sbv2_koharune_ami) と[`amitaro`（あみたろ）モデル](https://huggingface.co/litagin/sbv2_amitaro) は、[あみたろの声素材工房](https://amitaro.net/)で公開されているコーパス音源・ライブ配信音声を利用して事前に許可を得て学習したモデルです。下記の**利用規約を必ず読んで**からご利用ください。
+- Os modelos padrão adicionados na Versão 2.5, [`koharune-ami`](https://huggingface.co/litagin/sbv2_koharune_ami) e [`amitaro`](https://huggingface.co/litagin/sbv2_amitaro), foram treinados usando corpus e gravações ao vivo disponíveis no [Amitaro Voice Material Workshop](https://amitaro.net/), com permissão prévia. Por favor, **leia os termos de uso** antes de utilizá-los.
 
 - Ver 2.5のアップデート後に上記モデルをダウンロードするには、`Initialize.bat`をダブルクリックするか、手動でダウンロードして`model_assets`ディレクトリに配置してください。
 
-- Ver 2.3で追加された**エディター版**のほうが実際に読み上げさせるには使いやすいかもしれません。`Editor.bat`か`python server_editor.py --inbrowser`で起動できます。
+- A **versão editor** adicionada na Versão 2.3 pode ser mais fácil de usar para síntese. Inicie com `Editor.bat` ou `python server_editor.py --inbrowser`.
 """
 
 terms_of_use_md = """
-## お願いとデフォルトモデルのライセンス
+## Pedido e Licença do Modelo Padrão
 
-最新のお願い・利用規約は [こちら](https://github.com/litagin02/Style-Bert-VITS2/blob/master/docs/TERMS_OF_USE.md) を参照してください。常に最新のものが適用されます。
+Consulte os termos de uso mais recentes [aqui](https://github.com/litagin02/Style-Bert-VITS2/blob/master/docs/TERMS_OF_USE.md); eles são sempre aplicáveis.
 
-Style-Bert-VITS2を用いる際は、以下のお願いを守っていただけると幸いです。ただしモデルの利用規約以前の箇所はあくまで「お願い」であり、何の強制力はなく、Style-Bert-VITS2の利用規約ではありません。よって[リポジトリのライセンス](https://github.com/litagin02/Style-Bert-VITS2#license)とは矛盾せず、リポジトリの利用にあたっては常にリポジトリのライセンスのみが拘束力を持ちます。
+Ao usar Style-Bert-VITS2, agradecemos se seguir as solicitações abaixo. Note que as solicitações anteriores à licença do modelo são apenas **pedidos** sem força legal e não constituem os termos de uso do Style-Bert-VITS2. Portanto, não conflitam com a [licença do repositório](https://github.com/litagin02/Style-Bert-VITS2#license), que permanece a única obrigação legal ao usar o código.
 
-### やってほしくないこと
+### O que não deve ser feito
 
-以下の目的での利用はStyle-Bert-VITS2を使ってほしくありません。
+Não queremos que o Style-Bert-VITS2 seja usado para os seguintes fins:
 
-- 法律に違反する目的
-- 政治的な目的（本家Bert-VITS2で禁止されています）
-- 他者を傷つける目的
-- なりすまし・ディープフェイク作成目的
+- Propósitos ilegais
+- Propósitos políticos (proibidos pelo Bert-VITS2 original)
+- Danificar outras pessoas
+- Criação de deepfakes ou falsificação de identidade
 
-### 守ってほしいこと
+### O que deve ser respeitado
 
-- Style-Bert-VITS2を利用する際は、使用するモデルの利用規約・ライセンス必ず確認し、存在する場合はそれに従ってほしいです。
-- またソースコードを利用する際は、[リポジトリのライセンス](https://github.com/litagin02/Style-Bert-VITS2#license)に従ってほしいです。
+- Ao usar Style-Bert-VITS2, verifique sempre os termos de uso e licenças dos modelos utilizados e siga-os se existirem.
+- Ao usar o código-fonte, siga a [licença do repositório](https://github.com/litagin02/Style-Bert-VITS2#license).
 
-以下はデフォルトで付随しているモデルのライセンスです。
+A seguir estão as licenças dos modelos padrão.
 
-### JVNVコーパス (jvnv-F1-jp, jvnv-F2-jp, jvnv-M1-jp, jvnv-M2-jp)
+### Corpus JVNV (jvnv-F1-jp, jvnv-F2-jp, jvnv-M1-jp, jvnv-M2-jp)
 
-- [JVNVコーパス](https://sites.google.com/site/shinnosuketakamichi/research-topics/jvnv_corpus) のライセンスは[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.ja)ですので、これを継承します。
+- O corpus [JVNV](https://sites.google.com/site/shinnosuketakamichi/research-topics/jvnv_corpus) está licenciado sob [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.ja); adotamos essa licença.
 
-### 小春音アミ (koharune-ami) / あみたろ (amitaro)
+### Koharune-ami / Amitaro
 
-[あみたろの声素材工房様の規約](https://amitaro.net/voice/voice_rule/) と [あみたろのライブ配信音声・利用規約](https://amitaro.net/voice/livevoice/#index_id6) を全て守らなければなりません。特に、以下の事項を遵守してください（規約を守れば商用非商用問わず利用できます）：
+É obrigatório cumprir todas as regras do [Regulamento de Material Vocal da Amitaro](https://amitaro.net/voice/voice_rule/) e os [Termos de Uso das Gravações ao Vivo da Amitaro](https://amitaro.net/voice/livevoice/#index_id6). Em particular, siga estas diretrizes (permitidas tanto para uso comercial quanto não comercial):
 
-#### 禁止事項
+#### Proibições
 
-- 年齢制限のある作品・用途への使用
-- 新興宗教・政治・マルチ購などに深く関係する作品・用途
-- 特定の団体や個人や国家を誹謗中傷する作品・用途
-- 生成された音声を、あみたろ本人の声として扱うこと
-- 生成された音声を、あみたろ以外の人の声として扱うこと
+- Uso em obras ou aplicações com restrição de idade
+- Conteúdo ligado a religiões novas, política ou esquemas de marketing multi‑nível
+- Obras que difamam indivíduos, grupos ou nações
+- Tratar áudio gerado como se fosse a voz real da Amitaro
+- Tratar áudio gerado como se fosse a voz de outra pessoa que não a Amitaro
 
-#### クレジット表記
+#### Créditos
 
-生成音声を公開する際は（媒体は問わない）、必ず分かりやすい場所に `あみたろの声素材工房 (https://amitaro.net/)` の声を元にした音声モデルを使用していることが分かるようなクレジット表記を記載してください。
+Ao publicar áudio gerado (independentemente da mídia), inclua uma nota de crédito clara indicando que o modelo de voz foi baseado no material da **Amitaro Voice Material Workshop** (https://amitaro.net/).
 
-クレジット表記例:
-- `Style-BertVITS2モデル: 小春音アミ、あみたろの声素材工房 (https://amitaro.net/)`
-- `Style-BertVITS2モデル: あみたろ、あみたろの声素材工房 (https://amitaro.net/)`
+Exemplos de crédito:
+- `Modelo Style‑BertVITS2: Koharune‑ami, Amitaro Voice Material Workshop (https://amitaro.net/)`
+- `Modelo Style‑BertVITS2: Amitaro, Amitaro Voice Material Workshop (https://amitaro.net/)`
 
-#### モデルマージ
+#### Modelo de Mesclagem
 
-モデルマージに関しては、[あみたろの声素材工房のよくある質問への回答](https://amitaro.net/voice/faq/#index_id17)を遵守してください：
-- 本モデルを別モデルとマージできるのは、その別モデル作成の際に学習に使われた声の権利者が許諾している場合に限る
-- あみたろの声の特徴が残っている場合（マージの割合が25%以上の場合）は、その利用は[あみたろの声素材工房様の規約](https://amitaro.net/voice/voice_rule/)の範囲内に限定され、そのモデルに関してもこの規約が適応される
+Para a mesclagem de modelos, siga as [Perguntas Frequentes da Amitaro Voice Material Workshop](https://amitaro.net/voice/faq/#index_id17):
+- Este modelo só pode ser mesclado com outro modelo se o detentor dos direitos da voz usada para criar esse outro modelo tiver dado permissão.
+- Se as características da voz de Amitaro permanecerem (se a proporção da mesclagem for de 25% ou mais), o uso será restrito aos [Termos de Uso da Amitaro Voice Material Workshop](https://amitaro.net/voice/voice_rule/), e esses termos se aplicarão ao modelo resultante.
 """
 
 how_to_md = """
@@ -272,11 +272,11 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
         if use_tone and kata_tone_json_str != "":
             if language != "JP":
                 logger.warning("Only Japanese is supported for tone generation.")
-                wrong_tone_message = "アクセント指定は現在日本語のみ対応しています。"
+                wrong_tone_message = "Ajuste de acento atualmente suportado apenas para japonês."
             if line_split:
-                logger.warning("Tone generation is not supported for line split.")
+                logger.warning("Tone generation is not supported when splitting by lines.")
                 wrong_tone_message = (
-                    "アクセント指定は改行で分けて生成を使わない場合のみ対応しています。"
+                    "Ajuste de acento não pode ser usado quando a geração é dividida por linhas."
                 )
             try:
                 kata_tone = []
@@ -287,7 +287,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                     kata_tone.append((kana, tone))
             except Exception as e:
                 logger.warning(f"Error occurred when parsing kana_tone_json: {e}")
-                wrong_tone_message = f"アクセント指定が不正です: {e}"
+                wrong_tone_message = f"Ajuste de acento inválido: {e}"
                 kata_tone = None
 
         # toneは実際に音声合成に代入される際のみnot Noneになる
@@ -325,7 +325,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
             )
         except InvalidToneError as e:
             logger.error(f"Tone error: {e}")
-            return f"Error: アクセント指定が不正です:\n{e}", None, kata_tone_json_str
+            return f"Error: Ajuste de acento inválido:\n{e}", None, kata_tone_json_str
         except ValueError as e:
             logger.error(f"Value error: {e}")
             return f"Error: {e}", None, kata_tone_json_str
@@ -351,11 +351,11 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
     model_names = model_holder.model_names
     if len(model_names) == 0:
         logger.error(
-            f"モデルが見つかりませんでした。{model_holder.root_dir}にモデルを置いてください。"
+            f"Nenhum modelo encontrado. Por favor, coloque os modelos em {model_holder.root_dir}."
         )
         with gr.Blocks() as app:
             gr.Markdown(
-                f"Error: モデルが見つかりませんでした。{model_holder.root_dir}にモデルを置いてください。"
+                f"Error: Nenhum modelo encontrado. Por favor, coloque os modelos em {model_holder.root_dir}."
             )
         return app
     initial_id = 0
@@ -366,42 +366,42 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
         gr.Markdown(terms_of_use_md)
         null_models = gr.State({})
         force_reload_model = gr.State(False)
-        with gr.Accordion(label="使い方", open=False):
+        with gr.Accordion(label="Como usar", open=False):
             gr.Markdown(how_to_md)
         with gr.Row():
             with gr.Column():
                 with gr.Row():
                     with gr.Column(scale=3):
                         model_name = gr.Dropdown(
-                            label="モデル一覧",
+                            label="Lista de modelos",
                             choices=model_names,
                             value=model_names[initial_id],
                         )
                         model_path = gr.Dropdown(
-                            label="モデルファイル",
+                            label="Arquivo do modelo",
                             choices=initial_pth_files,
                             value=initial_pth_files[0],
                         )
-                    refresh_button = gr.Button("更新", scale=1, visible=True)
-                    load_button = gr.Button("ロード", scale=1, variant="primary")
-                text_input = gr.TextArea(label="テキスト", value=initial_text)
+                    refresh_button = gr.Button("Atualizar", scale=1, visible=True)
+                    load_button = gr.Button("Carregar", scale=1, variant="primary")
+                text_input = gr.TextArea(label="Texto", value=initial_text)
                 pitch_scale = gr.Slider(
                     minimum=0.8,
                     maximum=1.5,
                     value=1,
                     step=0.05,
-                    label="音高(1以外では音質劣化)",
+                    label="Pitch (qualidade pode degradar fora de 1)",
                 )
                 intonation_scale = gr.Slider(
                     minimum=0,
                     maximum=2,
                     value=1,
                     step=0.1,
-                    label="抑揚(1以外では音質劣化)",
+                    label="Entonação (qualidade pode degradar fora de 1)",
                 )
 
                 line_split = gr.Checkbox(
-                    label="改行で分けて生成（分けたほうが感情が乗ります）",
+                    label="Dividir por quebras de linha (geralmente melhora a emoção)",
                     value=DEFAULT_LINE_SPLIT,
                 )
                 split_interval = gr.Slider(
@@ -409,7 +409,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                     maximum=2,
                     value=DEFAULT_SPLIT_INTERVAL,
                     step=0.1,
-                    label="改行ごとに挟む無音の長さ（秒）",
+                    label="Duração do silêncio entre linhas (segundos)",
                 )
                 line_split.change(
                     lambda x: (gr.Slider(visible=x)),
@@ -417,53 +417,53 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                     outputs=[split_interval],
                 )
                 tone = gr.Textbox(
-                    label="アクセント調整（数値は 0=低 か1=高 のみ）",
-                    info="改行で分けない場合のみ使えます。万能ではありません。",
+                    label="Ajuste de acento (0=baixo, 1=alto)",
+                    info="Só funciona quando não há divisão por linhas. Não é universal.",
                 )
-                use_tone = gr.Checkbox(label="アクセント調整を使う", value=False)
+                use_tone = gr.Checkbox(label="Usar ajuste de acento", value=False)
                 use_tone.change(
                     lambda x: (gr.Checkbox(value=False) if x else gr.Checkbox()),
                     inputs=[use_tone],
                     outputs=[line_split],
                 )
-                language = gr.Dropdown(choices=languages, value="JP", label="Language")
-                speaker = gr.Dropdown(label="話者")
-                with gr.Accordion(label="詳細設定", open=False):
+                language = gr.Dropdown(choices=languages, value="JP", label="Idioma")
+                speaker = gr.Dropdown(label="Locutor")
+                with gr.Accordion(label="Detalhes", open=False):
                     sdp_ratio = gr.Slider(
                         minimum=0,
                         maximum=1,
                         value=DEFAULT_SDP_RATIO,
                         step=0.1,
-                        label="SDP Ratio",
+                        label="Relação SDP",
                     )
                     noise_scale = gr.Slider(
                         minimum=0.1,
                         maximum=2,
                         value=DEFAULT_NOISE,
                         step=0.1,
-                        label="Noise",
+                        label="Ruído",
                     )
                     noise_scale_w = gr.Slider(
                         minimum=0.1,
                         maximum=2,
                         value=DEFAULT_NOISEW,
                         step=0.1,
-                        label="Noise_W",
+                        label="Ruído_W",
                     )
                     length_scale = gr.Slider(
                         minimum=0.1,
                         maximum=2,
                         value=DEFAULT_LENGTH,
                         step=0.1,
-                        label="Length",
+                        label="Duração",
                     )
                     use_assist_text = gr.Checkbox(
-                        label="Assist textを使う", value=False
+                        label="Usar texto de assistência", value=False
                     )
                     assist_text = gr.Textbox(
-                        label="Assist text",
-                        placeholder="どうして私の意見を無視するの？許せない、ムカつく！死ねばいいのに。",
-                        info="このテキストの読み上げと似た声音・感情になりやすくなります。ただ抑揚やテンポ等が犠牲になる傾向があります。",
+                        label="Texto de assistência",
+                        placeholder="Por que ignoram minha opinião? Não perdoo, estou irritado! Você deveria desaparecer.",
+                        info="A leitura desse texto tende a produzir voz e emoção semelhantes. Pode sacrificar entonação e ritmo.",
                         visible=False,
                     )
                     assist_text_weight = gr.Slider(
@@ -471,7 +471,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                         maximum=1,
                         value=DEFAULT_ASSIST_TEXT_WEIGHT,
                         step=0.1,
-                        label="Assist textの強さ",
+                        label="Intensidade do texto de assistência",
                         visible=False,
                     )
                     use_assist_text.change(
@@ -479,10 +479,10 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                         inputs=[use_assist_text],
                         outputs=[assist_text, assist_text_weight],
                     )
-                with gr.Accordion(label="ヌルモデル", open=False):
+                with gr.Accordion(label="Modelo Nulo", open=False):
                     with gr.Row():
                         null_models_count = gr.Number(
-                            label="ヌルモデルの数", value=0, step=1
+                            label="Número de modelos nulos", value=0, step=1
                         )
                     with gr.Column(variant="panel"):
 
@@ -500,17 +500,15 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                                         visible=False,
                                     )
                                     null_model_name = gr.Dropdown(
-                                        label="モデル一覧",
+                                        label="Lista de modelos",
                                         choices=model_names,
                                         key=f"null_model_name_{i}",
                                         value=model_names[initial_id],
                                     )
                                     null_model_path = gr.Dropdown(
-                                        label="モデルファイル",
+                                        label="Arquivo do modelo",
                                         key=f"null_model_path_{i}",
-                                        # FIXME: 再レンダー時に選択肢が消えるのでどうにかしたい
-                                        # 現在は再レンダーでvalueは保存されるが選択肢は保存されないので選択肢が空になる
-                                        # そのときに選択肢にない値となるので、それを許す
+                                        # FIXME: As opções desaparecem ao re-renderizar; ainda assim permitimos valores personalizados
                                         allow_custom_value=True,
                                     )
                                     null_voice_weights = gr.Slider(
@@ -519,7 +517,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                                         value=1,
                                         step=0.1,
                                         key=f"null_voice_weights_{i}",
-                                        label="声質",
+                                        label="Qualidade da voz",
                                     )
                                     null_voice_pitch_weights = gr.Slider(
                                         minimum=0,
@@ -527,7 +525,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                                         value=1,
                                         step=0.1,
                                         key=f"null_voice_pitch_weights_{i}",
-                                        label="声の高さ",
+                                        label="Tom de voz",
                                     )
                                     null_speech_style_weights = gr.Slider(
                                         minimum=0,
@@ -535,7 +533,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                                         value=1,
                                         step=0.1,
                                         key=f"null_speech_style_weights_{i}",
-                                        label="話し方",
+                                        label="Estilo de fala",
                                     )
                                     null_tempo_weights = gr.Slider(
                                         minimum=0,
@@ -543,7 +541,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                                         value=1,
                                         step=0.1,
                                         key=f"null_tempo_weights_{i}",
-                                        label="テンポ",
+                                        label="Tempo",
                                     )
 
                                     null_model_name.change(
@@ -626,8 +624,8 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                                         outputs=[null_models, force_reload_model],
                                     )
 
-                    add_btn = gr.Button("ヌルモデルを増やす")
-                    del_btn = gr.Button("ヌルモデルを減らす")
+                    add_btn = gr.Button("Adicionar modelo nulo")
+                    del_btn = gr.Button("Remover modelo nulo")
                     add_btn.click(
                         lambda x: x + 1,
                         inputs=[null_models_count],
@@ -640,36 +638,36 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                     )
 
             with gr.Column():
-                with gr.Accordion("スタイルについて詳細", open=False):
+                with gr.Accordion("Detalhes do estilo", open=False):
                     gr.Markdown(style_md)
                 style_mode = gr.Radio(
                     ["プリセットから選ぶ", "音声ファイルを入力"],
-                    label="スタイルの指定方法",
+                    label="Método de especificação de estilo",
                     value="プリセットから選ぶ",
                 )
                 style = gr.Dropdown(
-                    label=f"スタイル（{DEFAULT_STYLE}が平均スタイル）",
-                    choices=["モデルをロードしてください"],
-                    value="モデルをロードしてください",
+                    label=f"Estilo (padrão {DEFAULT_STYLE})",
+                    choices=["Carregue o modelo primeiro"],
+                    value="Carregue o modelo primeiro",
                 )
                 style_weight = gr.Slider(
                     minimum=0,
                     maximum=20,
                     value=DEFAULT_STYLE_WEIGHT,
                     step=0.1,
-                    label="スタイルの強さ（声が崩壊したら小さくしてください）",
+                    label="Intensidade do estilo (reduza se a voz distorcer)",
                 )
                 ref_audio_path = gr.Audio(
-                    label="参照音声", type="filepath", visible=False
+                    label="Áudio de referência", type="filepath", visible=False
                 )
                 tts_button = gr.Button(
-                    "音声合成（モデルをロードしてください）",
+                    "Síntese de voz (carregue o modelo primeiro)",
                     variant="primary",
                     interactive=False,
                 )
-                text_output = gr.Textbox(label="情報")
-                audio_output = gr.Audio(label="結果")
-                with gr.Accordion("テキスト例", open=False):
+                text_output = gr.Textbox(label="Informação")
+                audio_output = gr.Audio(label="Resultado")
+                with gr.Accordion("Exemplos de texto", open=False):
                     gr.Examples(examples, inputs=[text_input, language])
 
         tts_button.click(

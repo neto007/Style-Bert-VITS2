@@ -45,19 +45,19 @@ train_ms:
   keep_ckpts: 1 # Set this to 0 to keep all checkpoints
 
 webui:  # For `webui.py`, which is not supported yet in Style-Bert-VITS2.
-  # 推理设备
+  # Dispositivo de inferência
   device: "cuda"
-  # 模型路径
+  # Caminho do modelo
   model: "models/G_8000.pth"
-  # 配置文件路径
+  # Caminho do arquivo de configuração
   config_path: "config.json"
-  # 端口号
+  # Número da porta
   port: 7860
-  # 是否公开部署，对外网开放
+  # Implantação pública, aberta para rede externa
   share: false
-  # 是否开启debug模式
+  # Habilitar modo debug
   debug: false
-  # 语种识别库，可选langid, fastlid
+  # Biblioteca de identificação de idioma, opcional langid, fastlid
   language_identification_library: "langid"
 
 # server_fastapi's config

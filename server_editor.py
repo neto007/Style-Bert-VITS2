@@ -1,10 +1,10 @@
 """
-Style-Bert-VITS2-Editor用のサーバー。
-次のリポジトリ
+Servidor para o Style-Bert-VITS2-Editor.
+Construa o seguinte repositório
 https://github.com/litagin02/Style-Bert-VITS2-Editor
-をビルドしてできあがったファイルをWebフォルダに入れて実行する。
+e coloque os arquivos resultantes na pasta Web para executar.
 
-TODO: リファクタリングやドキュメンテーションやAPI整理、辞書周りの改善などが必要。
+TODO: Refatoração, documentação, organização da API e melhorias no dicionário são necessárias.
 """
 
 import argparse
@@ -65,7 +65,7 @@ LAST_DOWNLOAD_FILE = STATIC_DIR / "last_download.txt"
 
 
 def download_static_files(user, repo, asset_name):
-    """Style-Bert-VITS2エディターの最新のビルドzipをダウンロードして展開する。"""
+    """Baixa e extrai o zip de build mais recente do editor Style-Bert-VITS2."""
 
     logger.info("Checking for new release...")
     latest_release = get_latest_release(user, repo)
@@ -287,7 +287,7 @@ def synthesis(request: SynthesisRequest):
     if args.line_length is not None and len(request.text) > args.line_length:
         raise HTTPException(
             status_code=400,
-            detail=f"1行の文字数は{args.line_length}文字以下にしてください。",
+            detail=f"O número de caracteres por linha deve ser {args.line_length} ou menos.",
         )
     try:
         model = model_holder.get_model(
@@ -346,7 +346,7 @@ def multi_synthesis(request: MultiSynthesisRequest):
     if args.line_count is not None and len(lines) > args.line_count:
         raise HTTPException(
             status_code=400,
-            detail=f"行数は{args.line_count}行以下にしてください。",
+            detail=f"O número de linhas deve ser {args.line_count} ou menos.",
         )
     audios = []
     sr = None
@@ -354,7 +354,7 @@ def multi_synthesis(request: MultiSynthesisRequest):
         if args.line_length is not None and len(req.text) > args.line_length:
             raise HTTPException(
                 status_code=400,
-                detail=f"1行の文字数は{args.line_length}文字以下にしてください。",
+                detail=f"O número de caracteres por linha deve ser {args.line_length} ou menos.",
             )
         try:
             model = model_holder.get_model(
@@ -403,7 +403,7 @@ def multi_synthesis(request: MultiSynthesisRequest):
 class UserDictWordRequest(BaseModel):
     surface: str
     pronunciation: str
-    accent_type: int  # アクセント核位置（存在しない場合は0、1文字目は1）
+    accent_type: int  # Posição do núcleo do acento (0 se não existir, 1 para o primeiro caractere)
     priority: int = 5
 
 

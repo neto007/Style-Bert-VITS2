@@ -69,7 +69,7 @@ def run():
         "-m",
         "--model",
         type=str,
-        help="数据集文件夹路径，请注意，数据不再默认放在/logs文件夹下。如果需要用命令行配置，请声明相对于根目录的路径",
+        help="Caminho da pasta do conjunto de dados. Observe que os dados não são mais colocados na pasta /logs por padrão. Se precisar configurar via linha de comando, declare o caminho relativo ao diretório raiz.",
         default=config.dataset_path,
     )
     parser.add_argument(

@@ -146,57 +146,57 @@ if __name__ == "__main__":
     @app.api_route("/voice", methods=["GET", "POST"], response_class=AudioResponse)
     async def voice(
         request: Request,
-        text: str = Query(..., min_length=1, max_length=limit, description="セリフ"),
-        encoding: str = Query(None, description="textをURLデコードする(ex, `utf-8`)"),
+        text: str = Query(..., min_length=1, max_length=limit, description="Texto"),
+        encoding: str = Query(None, description="Decodificar URL do texto (ex: utf-8)"),
         model_name: str = Query(
             None,
-            description="モデル名(model_idより優先)。model_assets内のディレクトリ名を指定",
+            description="Nome do modelo (prioridade sobre model_id). Especifique o nome do diretório em model_assets",
         ),
         model_id: int = Query(
-            0, description="モデルID。`GET /models/info`のkeyの値を指定ください"
+            0, description="ID do modelo. Especifique o valor da chave de GET /models/info"
         ),
         speaker_name: str = Query(
             None,
-            description="話者名(speaker_idより優先)。esd.listの2列目の文字列を指定",
+            description="Nome do falante (prioridade sobre speaker_id). Especifique a string da segunda coluna de esd.list",
         ),
         speaker_id: int = Query(
-            0, description="話者ID。model_assets>[model]>config.json内のspk2idを確認"
+            0, description="ID do falante. Verifique spk2id em model_assets>[model]>config.json"
         ),
         sdp_ratio: float = Query(
             DEFAULT_SDP_RATIO,
-            description="SDP(Stochastic Duration Predictor)/DP混合比。比率が高くなるほどトーンのばらつきが大きくなる",
+            description="Proporção de mistura SDP (Stochastic Duration Predictor)/DP. Quanto maior a proporção, maior a variação de tom",
         ),
         noise: float = Query(
             DEFAULT_NOISE,
-            description="サンプルノイズの割合。大きくするほどランダム性が高まる",
+            description="Proporção de ruído de amostra. Quanto maior, maior a aleatoriedade",
         ),
         noisew: float = Query(
             DEFAULT_NOISEW,
-            description="SDPノイズ。大きくするほど発音の間隔にばらつきが出やすくなる",
+            description="Ruído SDP. Quanto maior, maior a variação nos intervalos de pronúncia",
         ),
         length: float = Query(
             DEFAULT_LENGTH,
-            description="話速。基準は1で大きくするほど音声は長くなり読み上げが遅まる",
+            description="Velocidade da fala. A base é 1; quanto maior, mais longo o áudio e mais lenta a leitura",
         ),
-        language: Languages = Query(ln, description="textの言語"),
-        auto_split: bool = Query(DEFAULT_LINE_SPLIT, description="改行で分けて生成"),
+        language: Languages = Query(ln, description="Idioma do texto"),
+        auto_split: bool = Query(DEFAULT_LINE_SPLIT, description="Gerar dividido por quebras de linha"),
         split_interval: float = Query(
-            DEFAULT_SPLIT_INTERVAL, description="分けた場合に挟む無音の長さ（秒）"
+            DEFAULT_SPLIT_INTERVAL, description="Duração do silêncio inserido ao dividir (segundos)"
         ),
         assist_text: Optional[str] = Query(
             None,
-            description="このテキストの読み上げと似た声音・感情になりやすくなる。ただし抑揚やテンポ等が犠牲になる傾向がある",
+            description="Tende a ter voz e emoção semelhantes à leitura deste texto. No entanto, entonação e tempo tendem a ser sacrificados",
         ),
         assist_text_weight: float = Query(
-            DEFAULT_ASSIST_TEXT_WEIGHT, description="assist_textの強さ"
+            DEFAULT_ASSIST_TEXT_WEIGHT, description="Força do assist_text"
         ),
-        style: Optional[str] = Query(DEFAULT_STYLE, description="スタイル"),
-        style_weight: float = Query(DEFAULT_STYLE_WEIGHT, description="スタイルの強さ"),
+        style: Optional[str] = Query(DEFAULT_STYLE, description="Estilo"),
+        style_weight: float = Query(DEFAULT_STYLE_WEIGHT, description="Força do estilo"),
         reference_audio_path: Optional[str] = Query(
-            None, description="スタイルを音声ファイルで行う"
+            None, description="Usar arquivo de áudio para estilo"
         ),
     ):
-        """Infer text to speech(テキストから感情付き音声を生成する)"""
+        """Infer text to speech (Gerar fala com emoção a partir de texto)"""
         logger.info(
             f"{request.client.host}:{request.client.port}/voice  { unquote(str(request.query_params) )}"
         )
@@ -272,7 +272,7 @@ if __name__ == "__main__":
 
     @app.get("/models/info")
     def get_loaded_models_info():
-        """ロードされたモデル情報の取得"""
+        """Obter informações dos modelos carregados"""
 
         result: dict[str, dict[str, Any]] = dict()
         for model_id, model in enumerate(loaded_models):
@@ -288,14 +288,14 @@ if __name__ == "__main__":
 
     @app.post("/models/refresh")
     def refresh():
-        """モデルをパスに追加/削除した際などに読み込ませる"""
+        """Recarregar quando modelos são adicionados/removidos do caminho"""
         model_holder.refresh()
         load_models(model_holder)
         return get_loaded_models_info()
 
     @app.get("/status")
     def get_status():
-        """実行環境のステータスを取得"""
+        """Obter status do ambiente de execução"""
         cpu_percent = psutil.cpu_percent(interval=1)
         memory_info = psutil.virtual_memory()
         memory_total = memory_info.total
@@ -331,9 +331,9 @@ if __name__ == "__main__":
 
     @app.get("/tools/get_audio", response_class=AudioResponse)
     def get_audio(
-        request: Request, path: str = Query(..., description="local wav path")
+        request: Request, path: str = Query(..., description="caminho local do wav")
     ):
-        """wavデータを取得する"""
+        """Obter dados wav"""
         logger.info(
             f"{request.client.host}:{request.client.port}/tools/get_audio  { unquote(str(request.query_params) )}"
         )

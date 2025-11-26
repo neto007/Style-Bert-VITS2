@@ -6,9 +6,9 @@ import yaml
 
 
 parser = argparse.ArgumentParser(
-    description="config.ymlの生成。あらかじめ前準備をしたデータをバッチファイルなどで連続で学習する時にtrain_ms.pyより前に使用する。"
+    description="Geração do config.yml. Usado antes de train_ms.py ao treinar de forma contínua com dados pré‑preparados via scripts batch."
 )
-# そうしないと最後の前準備したデータで学習してしまう
+# Caso contrário, o treinamento usaria os dados pré‑preparados finais.
 parser.add_argument("--model_name", type=str, help="Model name", required=True)
 parser.add_argument(
     "--dataset_path",

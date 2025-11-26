@@ -28,20 +28,20 @@ def get_stamps(
     max_sec: float = 12,
 ):
     """
-    min_silence_dur_ms: int (ミリ秒):
-        このミリ秒数以上を無音だと判断する。
-        逆に、この秒数以下の無音区間では区切られない。
-        小さくすると、音声がぶつ切りに小さくなりすぎ、
-        大きくすると音声一つ一つが長くなりすぎる。
-        データセットによってたぶん要調整。
-    min_sec: float (秒):
-        この秒数より小さい発話は無視する。
-    max_sec: float (秒):
-        この秒数より大きい発話は無視する。
+    min_silence_dur_ms: int (milissegundos):
+        Considera silêncio quando a duração excede esse número de milissegundos.
+        Inversamente, intervalos de silêncio menores que esse valor não são divididos.
+        Valores menores podem resultar em cortes excessivos de áudio.
+        Valores maiores podem fazer cada segmento de áudio ficar muito longo.
+        Pode ser necessário ajustar conforme o conjunto de dados.
+    min_sec: float (segundos):
+        Ignora falas com duração menor que este valor.
+    max_sec: float (segundos):
+        Ignora falas com duração maior que este valor.
     """
 
     (get_speech_timestamps, _, read_audio, *_) = utils
-    sampling_rate = 16000  # 16kHzか8kHzのみ対応
+    sampling_rate = 16000  # Suporta apenas 16kHz ou 8kHz
 
     min_ms = int(min_sec * 1000)
 
@@ -68,7 +68,7 @@ def split_wav(
     min_silence_dur_ms: int = 700,
     time_suffix: bool = False,
 ) -> tuple[float, int]:
-    margin: int = 200  # ミリ秒単位で、音声の前後に余裕を持たせる
+    margin: int = 200  # Margem em milissegundos ao redor do áudio
     speech_timestamps = get_stamps(
         vad_model=vad_model,
         utils=utils,
@@ -88,7 +88,7 @@ def split_wav(
     total_time_ms: float = 0
     count = 0
 
-    # タイムスタンプに従って分割し、ファイルに保存
+    # Divide conforme timestamps e salva os arquivos
     for i, ts in enumerate(speech_timestamps):
         start_ms = max(ts["start"] / 16 - margin, 0)
         end_ms = min(ts["end"] / 16 + margin, total_ms)
@@ -177,8 +177,8 @@ if __name__ == "__main__":
         trust_repo=True,
     )
 
-    # Silero VADのモデルは、同じインスタンスで並列処理するとおかしくなるらしい
-    # ワーカーごとにモデルをロードするようにするため、Queueを使って処理する
+    # O modelo Silero VAD pode apresentar problemas ao ser usado em paralelo na mesma instância
+    # Usa Queue para que cada worker carregue seu próprio modelo
     def process_queue(
         q: Queue[Optional[Path]],
         result_queue: Queue[tuple[float, int]],
@@ -193,7 +193,7 @@ if __name__ == "__main__":
         )
         while True:
             file = q.get()
-            if file is None:  # 終了シグナルを確認
+            if file is None:  # Verifica sinal de término
                 q.task_done()
                 break
             try:
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     result_queue: Queue[tuple[float, int]] = Queue()
     error_queue: Queue[tuple[Path, Exception]] = Queue()
 
-    # ファイル数が少ない場合は、ワーカー数をファイル数に合わせる
+    # Ajusta o número de workers ao número de arquivos se for pequeno
     num_processes = min(num_processes, len(audio_files))
 
     threads = [
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     for file in audio_files:
         q.put(file)
 
-    # result_queueを監視し、要素が追加されるごとに結果を加算しプログレスバーを更新
+    # Monitora result_queue e atualiza a barra de progresso conforme resultados chegam
     total_sec = 0
     total_count = 0
     for _ in range(len(audio_files)):
@@ -243,10 +243,10 @@ if __name__ == "__main__":
         total_count += count
         pbar.update(1)
 
-    # 全ての処理が終わるまで待つ
+    # Aguarda até que todas as tarefas sejam concluídas
     q.join()
 
-    # 終了シグナル None を送る
+    # Envia sinal de término None
     for _ in range(num_processes):
         q.put(None)
 
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     pbar.close()
 
     if not error_queue.empty():
-        error_str = "Error slicing some files:"
+        error_str = "Erro ao dividir alguns arquivos:"
         while not error_queue.empty():
             file, e = error_queue.get()
             error_str += f"\n{file}: {e}"

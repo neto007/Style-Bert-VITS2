@@ -59,6 +59,7 @@ def initialize(
     use_jp_extra: bool,
     use_pt_extra: bool,
     log_interval: int,
+    freeze_PT_bert: bool = False,
 ):
     global logger_handler
     paths = get_path(model_name)
@@ -277,17 +278,17 @@ def preprocess_all(
     num_processes: int,
     normalize: bool,
     trim: bool,
-    freeze_EN_bert: bool,
-    freeze_PT_bert: bool,
-    freeze_JP_bert: bool,
-    freeze_ZH_bert: bool,
-    freeze_style: bool,
-    freeze_decoder: bool,
-    use_jp_extra: bool,
-    use_pt_extra: bool,
-    val_per_lang: int,
-    log_interval: int,
-    yomi_error: str,
+    freeze_EN_bert: bool = False,
+    freeze_PT_bert: bool = False,
+    freeze_JP_bert: bool = False,
+    freeze_ZH_bert: bool = False,
+    freeze_style: bool = False,
+    freeze_decoder: bool = False,
+    use_jp_extra: bool = False,
+    use_pt_extra: bool = True,
+    val_per_lang: int = 0,
+    log_interval: int = 200,
+    yomi_error: str = "skip",
 ):
     if model_name == "":
         return False, "Error: Por favor, insira o nome do modelo"
@@ -661,6 +662,10 @@ def create_train_app():
                         label="Congelar parte BERT Inglês",
                         value=False,
                     )
+                    freeze_PT_bert_manual = gr.Checkbox(
+                        label="Congelar parte BERT Português",
+                        value=False,
+                    )
                     freeze_JP_bert_manual = gr.Checkbox(
                         label="Congelar parte BERT Japonês",
                         value=False,
@@ -815,6 +820,7 @@ def create_train_app():
                 use_jp_extra_manual,
                 use_pt_extra_manual,
                 log_interval_manual,
+                freeze_PT_bert_manual,
             ],
             outputs=[info_init],
         )

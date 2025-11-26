@@ -357,7 +357,7 @@ class TTSModel:
     def infer(
         self,
         text: str,
-        language: Languages = Languages.JP,
+        language: Languages = Languages.PT,
         speaker_id: int = 0,
         reference_audio_path: Optional[str] = None,
         sdp_ratio: float = DEFAULT_SDP_RATIO,
@@ -383,7 +383,7 @@ class TTSModel:
 
         Args:
             text (str): 読み上げるテキスト
-            language (Languages, optional): 言語. Defaults to Languages.JP.
+            language (Languages, optional): 言語. Defaults to Languages.PT.
             speaker_id (int, optional): 話者 ID. Defaults to 0.
             reference_audio_path (Optional[str], optional): 音声スタイルの参照元の音声ファイルのパス. Defaults to None.
             sdp_ratio (float, optional): DP と SDP の混合比。0 で DP のみ、1で SDP のみを使用 (値を大きくするとテンポに緩急がつく). Defaults to DEFAULT_SDP_RATIO.

@@ -193,14 +193,14 @@ skip_static_files = bool(args.skip_static_files)
 # 事前に BERT モデル/トークナイザーをロードしておく
 ## ここでロードしなくても必要になった際に自動ロードされるが、時間がかかるため事前にロードしておいた方が体験が良い
 ## server_editor.py は日本語にしか対応していないため、日本語の BERT モデル/トークナイザーのみロードする
-bert_models.load_model(Languages.JP, device_map=device)
-bert_models.load_tokenizer(Languages.JP)
+bert_models.load_model(Languages.PT, device_map=device)
+bert_models.load_tokenizer(Languages.PT)
 # VRAM 節約のため、既定では ONNX 版 BERT モデル/トークナイザーは事前ロードしない
 if args.preload_onnx_bert:
     onnx_bert_models.load_model(
-        Languages.JP, onnx_providers=torch_device_to_onnx_providers(device)
+        Languages.PT, onnx_providers=torch_device_to_onnx_providers(device)
     )
-    onnx_bert_models.load_tokenizer(Languages.JP)
+    onnx_bert_models.load_tokenizer(Languages.PT)
 
 model_holder = TTSModelHolder(
     model_dir, device, torch_device_to_onnx_providers(device), ignore_onnx=True
@@ -275,7 +275,7 @@ class SynthesisRequest(BaseModel):
     noise: float = DEFAULT_NOISE
     noisew: float = DEFAULT_NOISEW
     sdpRatio: float = DEFAULT_SDP_RATIO
-    language: Languages = Languages.JP
+    language: Languages = Languages.PT
     silenceAfter: float = 0.5
     pitchScale: float = 1.0
     intonationScale: float = 1.0

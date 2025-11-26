@@ -57,6 +57,7 @@ def initialize(
     freeze_style: bool,
     freeze_decoder: bool,
     use_jp_extra: bool,
+    use_pt_extra: bool,
     log_interval: int,
 ):
     global logger_handler
@@ -70,12 +71,14 @@ def initialize(
     logger_handler = logger.add(paths.dataset_path / file_name)
 
     logger.info(
-        f"Step 1: start initialization...\nmodel_name: {model_name}, batch_size: {batch_size}, epochs: {epochs}, save_every_steps: {save_every_steps}, freeze_ZH_bert: {freeze_ZH_bert}, freeze_JP_bert: {freeze_JP_bert}, freeze_EN_bert: {freeze_EN_bert}, freeze_style: {freeze_style}, freeze_decoder: {freeze_decoder}, use_jp_extra: {use_jp_extra}"
+        f"Step 1: start initialization...\nmodel_name: {model_name}, batch_size: {batch_size}, epochs: {epochs}, save_every_steps: {save_every_steps}, freeze_ZH_bert: {freeze_ZH_bert}, freeze_JP_bert: {freeze_JP_bert}, freeze_EN_bert: {freeze_EN_bert}, freeze_style: {freeze_style}, freeze_decoder: {freeze_decoder}, use_jp_extra: {use_jp_extra}, use_pt_extra: {use_pt_extra}"
     )
 
-    default_config_path = (
-        "configs/config.json" if not use_jp_extra else "configs/config_jp_extra.json"
-    )
+    default_config_path = "configs/config.json"
+    if use_jp_extra:
+        default_config_path = "configs/config_jp_extra.json"
+    elif use_pt_extra:
+        default_config_path = "configs/config_pt_extra.json"
 
     with open(default_config_path, encoding="utf-8") as f:
         config = json.load(f)
@@ -88,6 +91,7 @@ def initialize(
     config["train"]["log_interval"] = log_interval
 
     config["train"]["freeze_EN_bert"] = freeze_EN_bert
+    config["train"]["freeze_PT_bert"] = freeze_PT_bert
     config["train"]["freeze_JP_bert"] = freeze_JP_bert
     config["train"]["freeze_ZH_bert"] = freeze_ZH_bert
     config["train"]["freeze_style"] = freeze_style
@@ -97,6 +101,7 @@ def initialize(
 
     # 今はデフォルトであるが、以前は非JP-Extra版になくバグの原因になるので念のため
     config["data"]["use_jp_extra"] = use_jp_extra
+    config["data"]["use_pt_extra"] = use_pt_extra
 
     model_path = paths.dataset_path / "models"
     if model_path.exists():
@@ -109,7 +114,11 @@ def initialize(
             dirs_exist_ok=True,
         )
         shutil.rmtree(model_path)
-    pretrained_dir = Path("pretrained" if not use_jp_extra else "pretrained_jp_extra")
+    pretrained_dir = Path("pretrained")
+    if use_jp_extra:
+        pretrained_dir = Path("pretrained_jp_extra")
+    elif use_pt_extra:
+        pretrained_dir = Path("pretrained_pt_extra")
     try:
         shutil.copytree(
             src=pretrained_dir,
@@ -165,7 +174,7 @@ def resample(model_name: str, normalize: bool, trim: bool, num_processes: int):
 
 
 def preprocess_text(
-    model_name: str, use_jp_extra: bool, val_per_lang: int, yomi_error: str
+    model_name: str, use_jp_extra: bool, use_pt_extra: bool, val_per_lang: int, yomi_error: str
 ):
     logger.info("Step 3: start preprocessing text...")
     paths = get_path(model_name)
@@ -194,6 +203,8 @@ def preprocess_text(
     ]
     if use_jp_extra:
         cmd.append("--use_jp_extra")
+    if use_pt_extra:
+        cmd.append("--use_pt_extra")
     success, message = run_script_with_log(cmd)
     if not success:
         logger.error("Step 3: preprocessing text failed.")
@@ -267,11 +278,13 @@ def preprocess_all(
     normalize: bool,
     trim: bool,
     freeze_EN_bert: bool,
+    freeze_PT_bert: bool,
     freeze_JP_bert: bool,
     freeze_ZH_bert: bool,
     freeze_style: bool,
     freeze_decoder: bool,
     use_jp_extra: bool,
+    use_pt_extra: bool,
     val_per_lang: int,
     log_interval: int,
     yomi_error: str,
@@ -284,11 +297,13 @@ def preprocess_all(
         epochs=epochs,
         save_every_steps=save_every_steps,
         freeze_EN_bert=freeze_EN_bert,
+        freeze_PT_bert=freeze_PT_bert,
         freeze_JP_bert=freeze_JP_bert,
         freeze_ZH_bert=freeze_ZH_bert,
         freeze_style=freeze_style,
         freeze_decoder=freeze_decoder,
         use_jp_extra=use_jp_extra,
+        use_pt_extra=use_pt_extra,
         log_interval=log_interval,
     )
     if not success:
@@ -305,6 +320,7 @@ def preprocess_all(
     success, message = preprocess_text(
         model_name=model_name,
         use_jp_extra=use_jp_extra,
+        use_pt_extra=use_pt_extra,
         val_per_lang=val_per_lang,
         yomi_error=yomi_error,
     )
@@ -329,6 +345,7 @@ def train(
     model_name: str,
     skip_style: bool = False,
     use_jp_extra: bool = True,
+    use_pt_extra: bool = False,
     speedup: bool = False,
     not_use_custom_batch_sampler: bool = False,
 ):
@@ -497,6 +514,10 @@ def create_train_app():
             with gr.Column():
                 use_jp_extra = gr.Checkbox(
                     label="Usar versão JP-Extra (melhora desempenho em japonês, mas perde capacidade de falar inglês e chinês)",
+                    value=False,
+                )
+                use_pt_extra = gr.Checkbox(
+                    label="Usar versão PT-Extra (melhora desempenho em português)",
                     value=True,
                 )
                 batch_size = gr.Slider(
@@ -570,6 +591,10 @@ def create_train_app():
                         label="Congelar parte BERT Inglês",
                         value=False,
                     )
+                    freeze_PT_bert = gr.Checkbox(
+                        label="Congelar parte BERT Português",
+                        value=False,
+                    )
                     freeze_JP_bert = gr.Checkbox(
                         label="Congelar parte BERT Japonês",
                         value=False,
@@ -598,6 +623,10 @@ def create_train_app():
                     gr.Markdown(value="#### Passo 1: Gerar Arquivo de Configuração")
                     use_jp_extra_manual = gr.Checkbox(
                         label="Usar versão JP-Extra",
+                        value=False,
+                    )
+                    use_pt_extra_manual = gr.Checkbox(
+                        label="Usar versão PT-Extra",
                         value=True,
                     )
                     batch_size_manual = gr.Slider(
@@ -722,6 +751,10 @@ def create_train_app():
             )
             use_jp_extra_train = gr.Checkbox(
                 label="Usar versão JP-Extra",
+                value=False,
+            )
+            use_pt_extra_train = gr.Checkbox(
+                label="Usar versão PT-Extra",
                 value=True,
             )
             not_use_custom_batch_sampler = gr.Checkbox(
@@ -752,11 +785,13 @@ def create_train_app():
                 normalize,
                 trim,
                 freeze_EN_bert,
+                freeze_PT_bert,
                 freeze_JP_bert,
                 freeze_ZH_bert,
                 freeze_style,
                 freeze_decoder,
                 use_jp_extra,
+                use_pt_extra,
                 val_per_lang,
                 log_interval,
                 yomi_error,
@@ -778,6 +813,7 @@ def create_train_app():
                 freeze_style_manual,
                 freeze_decoder_manual,
                 use_jp_extra_manual,
+                use_pt_extra_manual,
                 log_interval_manual,
             ],
             outputs=[info_init],
@@ -797,6 +833,7 @@ def create_train_app():
             inputs=[
                 model_name,
                 use_jp_extra_manual,
+                use_pt_extra_manual,
                 val_per_lang_manual,
                 yomi_error_manual,
             ],
@@ -820,6 +857,7 @@ def create_train_app():
                 model_name,
                 skip_style,
                 use_jp_extra_train,
+                use_pt_extra_train,
                 speedup,
                 not_use_custom_batch_sampler,
             ],
@@ -834,10 +872,20 @@ def create_train_app():
             inputs=[use_jp_extra],
             outputs=[use_jp_extra_train],
         )
+        use_pt_extra.change(
+            lambda x: gr.Checkbox(value=x),
+            inputs=[use_pt_extra],
+            outputs=[use_pt_extra_train],
+        )
         use_jp_extra_manual.change(
             lambda x: gr.Checkbox(value=x),
             inputs=[use_jp_extra_manual],
             outputs=[use_jp_extra_train],
+        )
+        use_pt_extra_manual.change(
+            lambda x: gr.Checkbox(value=x),
+            inputs=[use_pt_extra_manual],
+            outputs=[use_pt_extra_train],
         )
 
     return app

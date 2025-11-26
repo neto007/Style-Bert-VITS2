@@ -349,6 +349,11 @@ def run():
         logger.info("Freezing JP bert encoder !!!")
         for param in net_g.enc_p.ja_bert_proj.parameters():
             param.requires_grad = False
+
+    if getattr(hps.train, "freeze_PT_bert", False):
+        logger.info("Freezing PT bert encoder !!!")
+        for param in net_g.enc_p.pt_bert_proj.parameters():
+            param.requires_grad = False
     if getattr(hps.train, "freeze_style", False):
         logger.info("Freezing style encoder !!!")
         for param in net_g.enc_p.style_proj.parameters():
@@ -616,21 +621,19 @@ def train_and_evaluate(
     net_d.train()
     if net_dur_disc is not None:
         net_dur_disc.train()
-    for batch_idx, (
-        x,
-        x_lengths,
-        spec,
-        spec_lengths,
-        y,
-        y_lengths,
-        speakers,
-        tone,
-        language,
-        bert,
-        ja_bert,
-        en_bert,
-        style_vec,
-    ) in enumerate(train_loader):
+    for batch_idx, batch in enumerate(train_loader):
+        if hps.data.use_jp_extra:
+            x, x_lengths, spec, spec_lengths, y, y_lengths, speakers, tone, language, ja_bert, style_vec = batch
+            bert = torch.zeros_like(ja_bert)
+            en_bert = torch.zeros_like(ja_bert)
+            pt_bert = torch.zeros_like(ja_bert)
+        elif hps.data.use_pt_extra:
+            x, x_lengths, spec, spec_lengths, y, y_lengths, speakers, tone, language, pt_bert, style_vec = batch
+            bert = torch.zeros_like(pt_bert)
+            ja_bert = torch.zeros_like(pt_bert)
+            en_bert = torch.zeros_like(pt_bert)
+        else:
+            x, x_lengths, spec, spec_lengths, y, y_lengths, speakers, tone, language, bert, ja_bert, en_bert, pt_bert, style_vec = batch
         if net_g.module.use_noise_scaled_mas:
             current_mas_noise_scale = (
                 net_g.module.mas_noise_scale_initial
@@ -652,6 +655,7 @@ def train_and_evaluate(
         bert = bert.cuda(local_rank, non_blocking=True)
         ja_bert = ja_bert.cuda(local_rank, non_blocking=True)
         en_bert = en_bert.cuda(local_rank, non_blocking=True)
+        pt_bert = pt_bert.cuda(local_rank, non_blocking=True)
         style_vec = style_vec.cuda(local_rank, non_blocking=True)
 
         with autocast(enabled=hps.train.bf16_run, dtype=torch.bfloat16):
@@ -675,6 +679,7 @@ def train_and_evaluate(
                 bert,
                 ja_bert,
                 en_bert,
+                pt_bert,
                 style_vec,
             )
             mel = spec_to_mel_torch(

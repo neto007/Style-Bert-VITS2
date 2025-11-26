@@ -28,20 +28,11 @@ def get_stamps(
     max_sec: float = 12,
 ):
     """
-    min_silence_dur_ms: int (milissegundos):
-        Considera silêncio quando a duração excede esse número de milissegundos.
-        Inversamente, intervalos de silêncio menores que esse valor não são divididos.
-        Valores menores podem resultar em cortes excessivos de áudio.
-        Valores maiores podem fazer cada segmento de áudio ficar muito longo.
-        Pode ser necessário ajustar conforme o conjunto de dados.
-    min_sec: float (segundos):
-        Ignora falas com duração menor que este valor.
-    max_sec: float (segundos):
-        Ignora falas com duração maior que este valor.
+    VAD (Voice Activity Detection) usando Silero.
     """
 
     (get_speech_timestamps, _, read_audio, *_) = utils
-    sampling_rate = 16000  # Suporta apenas 16kHz ou 8kHz
+    sampling_rate = 16000  # Silero opera em 8k ou 16k
 
     min_ms = int(min_sec * 1000)
 
@@ -68,7 +59,8 @@ def split_wav(
     min_silence_dur_ms: int = 700,
     time_suffix: bool = False,
 ) -> tuple[float, int]:
-    margin: int = 200  # Margem em milissegundos ao redor do áudio
+
+    margin: int = 200  # margem em ms antes e depois de cada trecho detectado
     speech_timestamps = get_stamps(
         vad_model=vad_model,
         utils=utils,
@@ -79,7 +71,6 @@ def split_wav(
     )
 
     data, sr = sf.read(audio_file)
-
     total_ms = len(data) / sr * 1000
 
     file_name = audio_file.stem
@@ -88,7 +79,6 @@ def split_wav(
     total_time_ms: float = 0
     count = 0
 
-    # Divide conforme timestamps e salva os arquivos
     for i, ts in enumerate(speech_timestamps):
         start_ms = max(ts["start"] / 16 - margin, 0)
         end_ms = min(ts["end"] / 16 + margin, total_ms)
@@ -101,6 +91,7 @@ def split_wav(
             file = f"{file_name}-{int(start_ms)}-{int(end_ms)}.wav"
         else:
             file = f"{file_name}-{i}.wav"
+
         sf.write(str(target_dir / file), segment, sr)
         total_time_ms += end_ms - start_ms
         count += 1
@@ -110,43 +101,17 @@ def split_wav(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--min_sec", "-m", type=float, default=2, help="Minimum seconds of a slice"
-    )
-    parser.add_argument(
-        "--max_sec", "-M", type=float, default=12, help="Maximum seconds of a slice"
-    )
-    parser.add_argument(
-        "--input_dir",
-        "-i",
-        type=str,
-        default="inputs",
-        help="Directory of input wav files",
-    )
-    parser.add_argument(
-        "--model_name",
-        type=str,
-        required=True,
-        help="The result will be in Data/{model_name}/raw/ (if Data is dataset_root in configs/paths.yml)",
-    )
-    parser.add_argument(
-        "--min_silence_dur_ms",
-        "-s",
-        type=int,
-        default=700,
-        help="Silence above this duration (ms) is considered as a split point.",
-    )
-    parser.add_argument(
-        "--time_suffix",
-        "-t",
-        action="store_true",
-        help="Make the filename end with -start_ms-end_ms when saving wav.",
-    )
+    parser.add_argument("--min_sec", "-m", type=float, default=2)
+    parser.add_argument("--max_sec", "-M", type=float, default=12)
+    parser.add_argument("--input_dir", "-i", type=str, default="inputs")
+    parser.add_argument("--model_name", type=str, required=True)
+    parser.add_argument("--min_silence_dur_ms", "-s", type=int, default=700)
+    parser.add_argument("--time_suffix", "-t", action="store_true")
     parser.add_argument(
         "--num_processes",
         type=int,
         default=3,
-        help="Number of processes to use. Default 3 seems to be the best.",
+        help="Number of worker threads to use.",
     )
     args = parser.parse_args()
 
@@ -156,11 +121,11 @@ if __name__ == "__main__":
     model_name = str(args.model_name)
     input_dir = Path(args.input_dir)
     output_dir = dataset_root / model_name / "raw"
-    min_sec: float = args.min_sec
-    max_sec: float = args.max_sec
-    min_silence_dur_ms: int = args.min_silence_dur_ms
-    time_suffix: bool = args.time_suffix
-    num_processes: int = args.num_processes
+    min_sec = args.min_sec
+    max_sec = args.max_sec
+    min_silence_dur_ms = args.min_silence_dur_ms
+    time_suffix = args.time_suffix
+    num_processes = args.num_processes
 
     audio_files = [file for file in input_dir.rglob("*") if is_audio_file(file)]
 
@@ -169,31 +134,31 @@ if __name__ == "__main__":
         logger.warning(f"Output directory {output_dir} already exists, deleting...")
         shutil.rmtree(output_dir)
 
-    # モデルをダウンロードしておく
+    # Precarrega o modelo Silero (repo oficial)
     _ = torch.hub.load(
-        repo_or_dir="litagin02/silero-vad",
+        repo_or_dir="snakers4/silero-vad",
         model="silero_vad",
         onnx=True,
         trust_repo=True,
     )
 
-    # O modelo Silero VAD pode apresentar problemas ao ser usado em paralelo na mesma instância
-    # Usa Queue para que cada worker carregue seu próprio modelo
+    # Fila de processamento
     def process_queue(
         q: Queue[Optional[Path]],
         result_queue: Queue[tuple[float, int]],
         error_queue: Queue[tuple[Path, Exception]],
     ):
-        # logger.debug("Worker started.")
+        # Cada worker carrega seu próprio modelo Silero
         vad_model, utils = torch.hub.load(
-            repo_or_dir="litagin02/silero-vad",
+            repo_or_dir="snakers4/silero-vad",
             model="silero_vad",
             onnx=True,
             trust_repo=True,
         )
+
         while True:
             file = q.get()
-            if file is None:  # Verifica sinal de término
+            if file is None:
                 q.task_done()
                 break
             try:
@@ -220,7 +185,6 @@ if __name__ == "__main__":
     result_queue: Queue[tuple[float, int]] = Queue()
     error_queue: Queue[tuple[Path, Exception]] = Queue()
 
-    # Ajusta o número de workers ao número de arquivos se for pequeno
     num_processes = min(num_processes, len(audio_files))
 
     threads = [
@@ -234,7 +198,6 @@ if __name__ == "__main__":
     for file in audio_files:
         q.put(file)
 
-    # Monitora result_queue e atualiza a barra de progresso conforme resultados chegam
     total_sec = 0
     total_count = 0
     for _ in range(len(audio_files)):
@@ -243,10 +206,8 @@ if __name__ == "__main__":
         total_count += count
         pbar.update(1)
 
-    # Aguarda até que todas as tarefas sejam concluídas
     q.join()
 
-    # Envia sinal de término None
     for _ in range(num_processes):
         q.put(None)
 

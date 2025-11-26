@@ -12,12 +12,12 @@ from style_bert_vits2.logging import logger
 from style_bert_vits2.utils.stdout_wrapper import SAFE_STDOUT
 
 
-# faster-whisperは並列処理しても速度が向上しないので、単一モデルでループ処理する
+# O faster-whisper não melhora a velocidade com processamento paralelo, então fazemos loop com um único modelo
 def transcribe_with_faster_whisper(
     model: "WhisperModel",
     audio_file: Path,
     initial_prompt: Optional[str] = None,
-    language: str = "ja",
+    language: str = "pt",
     num_beams: int = 1,
     no_repeat_ngram_size: int = 10,
 ):
@@ -32,7 +32,7 @@ def transcribe_with_faster_whisper(
     return "".join(texts)
 
 
-# HF pipelineで進捗表示をするために必要なDatasetクラス
+# Classe Dataset necessária para mostrar progresso no pipeline HF
 class StrListDataset(Dataset[str]):
     def __init__(self, original_list: list[str]) -> None:
         self.original_list = original_list
@@ -44,13 +44,13 @@ class StrListDataset(Dataset[str]):
         return self.original_list[i]
 
 
-# HFのWhisperはファイルリストを与えるとバッチ処理ができて速い
+# O Whisper do HF é rápido com processamento em lote se fornecida uma lista de arquivos
 def transcribe_files_with_hf_whisper(
     audio_files: list[Path],
     model_id: str,
     output_file: Path,
     initial_prompt: Optional[str] = None,
-    language: str = "ja",
+    language: str = "pt",
     batch_size: int = 16,
     num_beams: int = 1,
     no_repeat_ngram_size: int = 10,
@@ -92,7 +92,7 @@ def transcribe_files_with_hf_whisper(
         pipe(dataset, generate_kwargs=generate_kwargs), audio_files
     ):
         text: str = whisper_result["text"]
-        # なぜかテキストの最初に" {initial_prompt}"が入るので、文字の最初からこれを削除する
+        # Por algum motivo, " {initial_prompt}" é inserido no início do texto, então removemos isso
         # cf. https://github.com/huggingface/transformers/issues/27594
         if text.startswith(f" {initial_prompt}"):
             text = text[len(f" {initial_prompt}") :]
@@ -119,10 +119,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--initial_prompt",
         type=str,
-        default="こんにちは。元気、ですかー？ふふっ、私は……ちゃんと元気だよ！",
+        default="Olá. Como você está? Hehe, eu... estou muito bem!",
     )
     parser.add_argument(
-        "--language", type=str, default="ja", choices=["ja", "en", "zh"]
+        "--language", type=str, default="pt", choices=["ja", "en", "zh", "pt"]
     )
     parser.add_argument("--model", type=str, default="large-v3")
     parser.add_argument("--device", type=str, default="cuda")
@@ -173,6 +173,8 @@ if __name__ == "__main__":
         language_id = Languages.EN.value
     elif language == "zh":
         language_id = Languages.ZH.value
+    elif language == "pt":
+        language_id = Languages.PT.value
     else:
         raise ValueError(f"{language} is not supported.")
 

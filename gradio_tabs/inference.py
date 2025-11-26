@@ -426,7 +426,7 @@ def create_inference_app(model_holder: TTSModelHolder) -> gr.Blocks:
                     inputs=[use_tone],
                     outputs=[line_split],
                 )
-                language = gr.Dropdown(choices=languages, value="JP", label="Idioma")
+                language = gr.Dropdown(choices=languages, value="PT", label="Idioma")
                 speaker = gr.Dropdown(label="Locutor")
                 with gr.Accordion(label="Detalhes", open=False):
                     sdp_ratio = gr.Slider(

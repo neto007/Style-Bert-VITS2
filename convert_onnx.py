@@ -175,8 +175,8 @@ if __name__ == "__main__":
             # JP-Extra モデルアーキテクチャの場合、bert (中国語の BERT 特徴量) や en_bert (英語の BERT 特徴量) は
             # torch.zeros() で適当に埋められており、推論には ja_bert (日本語の BERT 特徴量) のみが使用される
             bert, ja_bert, en_bert, phones, tones, lang_ids = get_text(
-                "今日はいい天気ですね。",
-                Languages.JP,
+                "Hoje o tempo está bom.",
+                Languages.PT,
                 tts_model.hyper_parameters,
                 device,
                 assist_text=None,

@@ -106,6 +106,7 @@ def clean_text(
     text: str,
     language: Languages,
     use_jp_extra: bool = True,
+    use_pt_extra: bool = False,
     raise_yomi_error: bool = False,
 ) -> tuple[str, list[str], list[int], list[int]]:
     """
@@ -115,6 +116,7 @@ def clean_text(
         text (str): クリーニングするテキスト
         language (Languages): テキストの言語
         use_jp_extra (bool, optional): テキストが日本語の場合に JP-Extra モデルを利用するかどうか。Defaults to True.
+        use_pt_extra (bool, optional): テキストがポルトガル語の場合に PT-Extra モデルを利用するかどうか。Defaults to False.
         raise_yomi_error (bool, optional): False の場合、読めない文字が消えたような扱いとして処理される。Defaults to False.
 
     Returns:
@@ -158,6 +160,7 @@ def clean_text_with_given_phone_tone(
     given_phone: Optional[list[str]] = None,
     given_tone: Optional[list[int]] = None,
     use_jp_extra: bool = True,
+    use_pt_extra: bool = False,
     raise_yomi_error: bool = False,
 ) -> tuple[str, list[str], list[int], list[int]]:
     """
@@ -170,6 +173,7 @@ def clean_text_with_given_phone_tone(
         given_phone (Optional[list[int]], optional): 読み上げテキストの読みを表す音素列。指定する場合は given_tone も別途指定が必要. Defaults to None.
         given_tone (Optional[list[int]], optional): アクセントのトーンのリスト. Defaults to None.
         use_jp_extra (bool, optional): テキストが日本語の場合に JP-Extra モデルを利用するかどうか。Defaults to True.
+        use_pt_extra (bool, optional): テキストがポルトガル語の場合に PT-Extra モデルを利用するかどうか。Defaults to False.
         raise_yomi_error (bool, optional): False の場合、読めない文字が消えたような扱いとして処理される。Defaults to False.
 
     Returns:
@@ -181,6 +185,7 @@ def clean_text_with_given_phone_tone(
         text,
         language,
         use_jp_extra=use_jp_extra,
+        use_pt_extra=use_pt_extra,
         raise_yomi_error=raise_yomi_error,
     )
 

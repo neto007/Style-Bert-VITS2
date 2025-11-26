@@ -231,7 +231,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
         "--language",
-        default=Languages.JP,
+        default=Languages.PT,
         help="Language of the BERT model to be converted",
     )
     args = parser.parse_args()

@@ -214,7 +214,7 @@ def create_dataset_app() -> gr.Blocks:
                     info="Aumentar melhora a velocidade, mas usa mais VRAM",
                     visible=False,
                 )
-                language = gr.Dropdown(["pt", "en", "zh"], value="pt", label="Idioma")
+                language = gr.Dropdown(["pt", "en", "zh", "ja"], value="pt", label="Idioma")
                 initial_prompt = gr.Textbox(
                     label="Prompt inicial",
                     value="Olá! Como você está? Haha, eu estou bem!",

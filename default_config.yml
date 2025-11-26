@@ -64,7 +64,7 @@ webui:  # For `webui.py`, which is not supported yet in Style-Bert-VITS2.
 server:
   port: 5000
   device: "cuda"
-  language: "JP"
+  language: "PT"
   limit: 100
   origins:
     - "*"

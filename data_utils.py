@@ -38,6 +38,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         self.spk_map = hparams.spk2id
         self.hparams = hparams
         self.use_jp_extra = getattr(hparams, "use_jp_extra", False)
+        self.use_pt_extra = getattr(hparams, "use_pt_extra", False)
 
         self.use_mel_spec_posterior = getattr(
             hparams, "use_mel_posterior_encoder", False
@@ -94,7 +95,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         # separate filename, speaker_id and text
         audiopath, sid, language, text, phones, tone, word2ph = audiopath_sid_text
 
-        bert, ja_bert, en_bert, phones, tone, language = self.get_text(
+        bert, ja_bert, en_bert, pt_bert, phones, tone, language = self.get_text(
             text, word2ph, phones, tone, language, audiopath
         )
 
@@ -103,6 +104,8 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         style_vec = torch.FloatTensor(np.load(f"{audiopath}.npy"))
         if self.use_jp_extra:
             return (phones, spec, wav, sid, tone, language, ja_bert, style_vec)
+        elif self.use_pt_extra:
+            return (phones, spec, wav, sid, tone, language, pt_bert, style_vec)
         else:
             return (
                 phones,
@@ -114,6 +117,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
                 bert,
                 ja_bert,
                 en_bert,
+                pt_bert,
                 style_vec,
             )
 
@@ -178,18 +182,32 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
             bert = bert_ori
             ja_bert = torch.zeros(1024, len(phone))
             en_bert = torch.zeros(1024, len(phone))
+            pt_bert = torch.zeros(1024, len(phone))
         elif language_str == "JP":
             bert = torch.zeros(1024, len(phone))
             ja_bert = bert_ori
             en_bert = torch.zeros(1024, len(phone))
+            pt_bert = torch.zeros(1024, len(phone))
         elif language_str == "EN":
             bert = torch.zeros(1024, len(phone))
             ja_bert = torch.zeros(1024, len(phone))
             en_bert = bert_ori
+            pt_bert = torch.zeros(1024, len(phone))
+        elif language_str == "PT":
+            bert = torch.zeros(1024, len(phone))
+            ja_bert = torch.zeros(1024, len(phone))
+            en_bert = torch.zeros(1024, len(phone))
+            pt_bert = bert_ori
+        else:
+            # Fallback for other languages or if language_str is unknown
+            bert = torch.zeros(1024, len(phone))
+            ja_bert = torch.zeros(1024, len(phone))
+            en_bert = torch.zeros(1024, len(phone))
+            pt_bert = torch.zeros(1024, len(phone))
         phone = torch.LongTensor(phone)
         tone = torch.LongTensor(tone)
         language = torch.LongTensor(language)
-        return bert, ja_bert, en_bert, phone, tone, language
+        return bert, ja_bert, en_bert, pt_bert, phone, tone, language
 
     def get_sid(self, sid):
         sid = torch.LongTensor([int(sid)])
@@ -205,9 +223,10 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
 class TextAudioSpeakerCollate:
     """Zero-pads model inputs and targets"""
 
-    def __init__(self, return_ids=False, use_jp_extra=False):
+    def __init__(self, return_ids=False, use_jp_extra=False, use_pt_extra=False):
         self.return_ids = return_ids
         self.use_jp_extra = use_jp_extra
+        self.use_pt_extra = use_pt_extra
 
     def __call__(self, batch):
         """Collate's training batch from normalized text, audio and speaker identities
@@ -232,11 +251,12 @@ class TextAudioSpeakerCollate:
         text_padded = torch.LongTensor(len(batch), max_text_len)
         tone_padded = torch.LongTensor(len(batch), max_text_len)
         language_padded = torch.LongTensor(len(batch), max_text_len)
-        # This is ZH bert if not use_jp_extra, JA bert if use_jp_extra
+        # This is ZH bert if not use_jp_extra and not use_pt_extra, JA bert if use_jp_extra, PT bert if use_pt_extra
         bert_padded = torch.FloatTensor(len(batch), 1024, max_text_len)
-        if not self.use_jp_extra:
+        if not self.use_jp_extra and not self.use_pt_extra:
             ja_bert_padded = torch.FloatTensor(len(batch), 1024, max_text_len)
             en_bert_padded = torch.FloatTensor(len(batch), 1024, max_text_len)
+            pt_bert_padded = torch.FloatTensor(len(batch), 1024, max_text_len)
         style_vec = torch.FloatTensor(len(batch), 256)
 
         spec_padded = torch.FloatTensor(len(batch), batch[0][1].size(0), max_spec_len)
@@ -247,9 +267,10 @@ class TextAudioSpeakerCollate:
         spec_padded.zero_()
         wav_padded.zero_()
         bert_padded.zero_()
-        if not self.use_jp_extra:
+        if not self.use_jp_extra and not self.use_pt_extra:
             ja_bert_padded.zero_()
             en_bert_padded.zero_()
+            pt_bert_padded.zero_()
         style_vec.zero_()
 
         for i in range(len(ids_sorted_decreasing)):
@@ -280,28 +301,35 @@ class TextAudioSpeakerCollate:
 
             if self.use_jp_extra:
                 style_vec[i, :] = row[7]
+            elif self.use_pt_extra:
+                style_vec[i, :] = row[7]
             else:
                 ja_bert = row[7]
                 ja_bert_padded[i, :, : ja_bert.size(1)] = ja_bert
 
                 en_bert = row[8]
                 en_bert_padded[i, :, : en_bert.size(1)] = en_bert
-                style_vec[i, :] = row[9]
+                
+                pt_bert = row[9]
+                pt_bert_padded[i, :, : pt_bert.size(1)] = pt_bert
+                
+                style_vec[i, :] = row[10]
 
-        if self.use_jp_extra:
-            return (
-                text_padded,
-                text_lengths,
-                spec_padded,
-                spec_lengths,
-                wav_padded,
-                wav_lengths,
-                sid,
-                tone_padded,
-                language_padded,
-                bert_padded,
-                style_vec,
-            )
+            if self.use_jp_extra or self.use_pt_extra:
+                return (
+                    text_padded,
+                    text_lengths,
+                    spec_padded,
+                    spec_lengths,
+                    wav_padded,
+                    wav_lengths,
+                    sid,
+                    tone_padded,
+                    language_padded,
+                    bert_padded,
+                    style_vec,
+                )
+
         else:
             return (
                 text_padded,
@@ -316,6 +344,7 @@ class TextAudioSpeakerCollate:
                 bert_padded,
                 ja_bert_padded,
                 en_bert_padded,
+                pt_bert_padded,
                 style_vec,
             )
 

@@ -41,6 +41,7 @@ def process_line(
     transcription_path: Path,
     correct_path: bool,
     use_jp_extra: bool,
+    use_pt_extra: bool,
     yomi_error: str,
 ):
     splitted_line = line.strip().split("|")
@@ -51,6 +52,7 @@ def process_line(
         text=text,
         language=language,  # type: ignore
         use_jp_extra=use_jp_extra,
+        use_pt_extra=use_pt_extra,
         raise_yomi_error=(yomi_error != "use"),
     )
     if correct_path:
@@ -77,6 +79,7 @@ def preprocess(
     max_val_total: int,
     # clean: bool,
     use_jp_extra: bool,
+    use_pt_extra: bool,
     yomi_error: str,
     correct_path: bool,
 ):
@@ -107,6 +110,7 @@ def preprocess(
                     transcription_path,
                     correct_path,
                     use_jp_extra,
+                    use_pt_extra,
                     yomi_error,
                 )
                 out_file.write(processed_line)
@@ -236,6 +240,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--max-val-total", default=preprocess_text_config.max_val_total)
     parser.add_argument("--use_jp_extra", action="store_true")
+    parser.add_argument("--use_pt_extra", action="store_true")
     parser.add_argument("--yomi_error", default="raise")
     parser.add_argument("--correct_path", action="store_true")
 
@@ -249,6 +254,7 @@ if __name__ == "__main__":
     val_per_lang = int(args.val_per_lang)
     max_val_total = int(args.max_val_total)
     use_jp_extra: bool = args.use_jp_extra
+    use_pt_extra: bool = args.use_pt_extra
     yomi_error: str = args.yomi_error
     correct_path: bool = args.correct_path
 
@@ -261,6 +267,7 @@ if __name__ == "__main__":
         val_per_lang=val_per_lang,
         max_val_total=max_val_total,
         use_jp_extra=use_jp_extra,
+        use_pt_extra=use_pt_extra,
         yomi_error=yomi_error,
         correct_path=correct_path,
     )

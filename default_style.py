@@ -21,9 +21,12 @@ def save_neutral_vector(
         xvec = np.load(file)
         embs.append(np.expand_dims(xvec, axis=0))
 
-    x = np.concatenate(embs, axis=0)  # (N, 256)
-    mean = np.mean(x, axis=0)  # (256,)
-    only_mean = np.stack([mean])  # (1, 256)
+    if len(embs) == 0:
+        only_mean = np.zeros((1, 256), dtype=np.float32)
+    else:
+        x = np.concatenate(embs, axis=0)
+        mean = np.mean(x, axis=0)
+        only_mean = np.stack([mean])
     np.save(output_dir / "style_vectors.npy", only_mean)
     logger.info(f"Saved mean style vector to {output_dir}")
 

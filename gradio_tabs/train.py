@@ -119,7 +119,13 @@ def initialize(
     if use_jp_extra:
         pretrained_dir = Path("pretrained_jp_extra")
     elif use_pt_extra:
-        pretrained_dir = Path("pretrained_pt_extra")
+        pt_extra_dir = Path("pretrained_pt_extra")
+        if pt_extra_dir.exists():
+            pretrained_dir = pt_extra_dir
+        else:
+            logger.warning(
+                "Step 1: pretrained_pt_extra not found; falling back to 'pretrained'."
+            )
     try:
         shutil.copytree(
             src=pretrained_dir,

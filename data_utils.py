@@ -101,7 +101,11 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
 
         spec, wav = self.get_audio(audiopath)
         sid = torch.LongTensor([int(self.spk_map[sid])])
-        style_vec = torch.FloatTensor(np.load(f"{audiopath}.npy"))
+        try:
+            style_vec = torch.FloatTensor(np.load(f"{audiopath}.npy"))
+        except Exception:
+            style_vectors = np.load(config.out_dir / "style_vectors.npy")
+            style_vec = torch.FloatTensor(style_vectors[0])
         if self.use_jp_extra:
             return (phones, spec, wav, sid, tone, language, ja_bert, style_vec)
         elif self.use_pt_extra:

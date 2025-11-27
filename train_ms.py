@@ -198,12 +198,15 @@ def run():
     os.makedirs(config.out_dir, exist_ok=True)
 
     if not args.skip_default_style:
-        default_style.save_styles_by_dirs(
-            os.path.join(args.model, "wavs"),
-            config.out_dir,
-            config_path=args.config,
-            config_output_path=os.path.join(config.out_dir, "config.json"),
-        )
+        try:
+            default_style.save_styles_by_dirs(
+                os.path.join(args.model, "wavs"),
+                config.out_dir,
+                config_path=args.config,
+                config_output_path=os.path.join(config.out_dir, "config.json"),
+            )
+        except ValueError as e:
+            logger.warning(f"Default style generation skipped due to: {e}")
 
     torch.manual_seed(hps.train.seed)
     torch.cuda.set_device(local_rank)
@@ -218,6 +221,8 @@ def run():
         writer = SummaryWriter(log_dir=model_dir)
         writer_eval = SummaryWriter(log_dir=os.path.join(model_dir, "eval"))
     train_dataset = TextAudioSpeakerLoader(hps.data.training_files, hps.data)
+    if len(train_dataset) == 0:
+        raise ValueError(f"Empty training dataset: {hps.data.training_files}")
     collate_fn = TextAudioSpeakerCollate()
     if not args.not_use_custom_batch_sampler:
         train_sampler = DistributedBucketSampler(
@@ -297,9 +302,10 @@ def run():
         ).cuda(local_rank)
     if hps.model.use_spk_conditioned_encoder is True:
         if hps.data.n_speakers == 0:
-            raise ValueError(
-                "n_speakers must be > 0 when using spk conditioned encoder to train multi-speaker model"
+            logger.warning(
+                "n_speakers=0; falling back to single-speaker (n_speakers=1)"
             )
+            hps.data.n_speakers = 1
     else:
         logger.info("Using normal encoder for VITS1")
 

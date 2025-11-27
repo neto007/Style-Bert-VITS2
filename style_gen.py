@@ -5,6 +5,14 @@ from typing import Any
 import numpy as np
 import torch
 from numpy.typing import NDArray
+try:
+    import torchaudio  # type: ignore
+    if not hasattr(torchaudio, "AudioMetaData"):
+        class AudioMetaData:  # type: ignore
+            pass
+        torchaudio.AudioMetaData = AudioMetaData  # type: ignore
+except Exception:
+    pass
 from pyannote.audio import Inference, Model
 from tqdm import tqdm
 

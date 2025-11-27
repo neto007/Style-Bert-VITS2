@@ -29,23 +29,9 @@ def g2p(text: str) -> Tuple[List[str], List[int], List[int]]:
             temp_phones.append(full_word)
             temp_tones.append(0)
         else:
-            # Phonemize the word
-            # strip=True to remove surrounding whitespace from phonemizer output
-            phonemes = backend.phonemize([full_word], strip=True)[0]
-            
-            # Split phonemes (espeak output might need parsing if it returns a string)
-            # phonemizer with espeak backend usually returns a string of phonemes
-            # We need to clean it and split it.
-            # However, backend.phonemize returns a list of strings (one per input text).
-            # The string contains phonemes. We need to map them to our symbols.
-            
-            # Simple splitting by character might not be enough if there are multi-char phonemes?
-            # symbols.py has single char phonemes for PT (IPA).
-            # Let's assume 1 char = 1 phoneme for now, except for special cases if any.
-            # vits-portuguese symbols are mostly single char IPA.
-            
-            # Clean up phonemes
-            clean_phonemes = [p for p in phonemes if p in SYMBOLS]
+            phoneme_str = backend.phonemize([full_word], strip=True)[0]
+            tokens = phoneme_str.split()
+            clean_phonemes = [p for p in tokens if p in SYMBOLS]
             
             for p in clean_phonemes:
                 temp_phones.append(p)

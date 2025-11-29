@@ -14,7 +14,7 @@ onnxconverter-common
 onnxruntime
 onnxruntime-gpu
 onnxsim-prebuilt
-pyannote.audio==3.3.2
+pyannote.audio>=3.4.0
 pyloudnorm
 pyopenjtalk-dict
 pypinyin

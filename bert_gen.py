@@ -1,5 +1,6 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import torch
 import torch.multiprocessing as mp
@@ -10,7 +11,7 @@ from style_bert_vits2.constants import Languages
 from style_bert_vits2.logging import logger
 from style_bert_vits2.models import commons
 from style_bert_vits2.models.hyper_parameters import HyperParameters
-from style_bert_vits2.nlp import cleaned_text_to_sequence, extract_bert_feature
+from style_bert_vits2.nlp import cleaned_text_to_sequence, extract_bert_feature, extract_bert_feature_onnx
 from style_bert_vits2.nlp.japanese import pyopenjtalk_worker
 from style_bert_vits2.nlp.japanese.user_dict import update_dict
 from style_bert_vits2.utils.stdout_wrapper import SAFE_STDOUT
@@ -53,14 +54,54 @@ def process_line(x: tuple[str, bool]):
         word2ph[0] += 1
 
     bert_path = wav_path.replace(".WAV", ".wav").replace(".wav", ".bert.pt")
+    safetensors_path = wav_path.replace(".WAV", ".wav").replace(".wav", ".bert.safetensors")
 
     try:
-        bert = torch.load(bert_path)
-        assert bert.shape[-1] == len(phone)
-    except Exception:
-        bert = extract_bert_feature(text, word2ph, Languages(language_str), device)
-        assert bert.shape[-1] == len(phone)
-        torch.save(bert, bert_path)
+        # Tenta carregar safetensors primeiro (mais seguro)
+        if Path(safetensors_path).exists():
+            try:
+                from safetensors.torch import load_file
+                bert = load_file(safetensors_path)
+                # safetensors retorna um dict, pega o tensor
+                if isinstance(bert, dict):
+                    bert = list(bert.values())[0]
+            except ImportError:
+                logger.warning("safetensors não instalado, usando torch.load")
+                bert = torch.load(bert_path, map_location='cpu', weights_only=True)
+        # Tenta carregar .pt com weights_only=True
+        elif Path(bert_path).exists():
+            bert = torch.load(bert_path, map_location='cpu', weights_only=True)
+        else:
+            raise FileNotFoundError(f"Arquivo BERT não encontrado: {bert_path}")
+        
+        assert bert.shape[-1] == len(phone), f"Shape mismatch: {bert.shape[-1]} != {len(phone)}"
+    except (FileNotFoundError, AssertionError, RuntimeError) as e:
+        # Se não encontrou ou shape não bate, gera novo
+        logger.debug(f"Gerando BERT feature para {wav_path}: {str(e)}")
+        try:
+            bert = extract_bert_feature(text, word2ph, Languages(language_str), device)
+        except Exception as bert_error:
+            logger.warning(f"Erro ao extrair BERT feature, tentando ONNX: {str(bert_error)}")
+            try:
+                providers = ["CUDAExecutionProvider"] if str(device).startswith("cuda") else ["CPUExecutionProvider"]
+                bert_np = extract_bert_feature_onnx(text, word2ph, Languages(language_str), providers)
+                bert = torch.tensor(bert_np)
+            except Exception as onnx_error:
+                logger.error(f"Falha ao gerar BERT feature para {wav_path}: {str(onnx_error)}")
+                raise
+        
+        assert bert.shape[-1] == len(phone), f"Generated BERT shape mismatch: {bert.shape[-1]} != {len(phone)}"
+        
+        # Salva em ambos os formatos
+        try:
+            torch.save(bert, bert_path)
+            try:
+                from safetensors.torch import save_file
+                save_file({"bert": bert}, safetensors_path)
+            except ImportError:
+                pass  # safetensors opcional
+        except Exception as save_error:
+            logger.warning(f"Erro ao salvar BERT feature: {str(save_error)}")
 
 
 preprocess_text_config = config.preprocess_text_config

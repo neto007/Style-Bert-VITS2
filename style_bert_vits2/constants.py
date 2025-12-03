@@ -24,7 +24,7 @@ DEFAULT_BERT_MODEL_PATHS = {
     Languages.JP: BASE_DIR / "bert" / "deberta-v2-large-japanese-char-wwm",
     Languages.EN: BASE_DIR / "bert" / "deberta-v3-large",
     Languages.ZH: BASE_DIR / "bert" / "chinese-roberta-wwm-ext-large",
-    Languages.PT: BASE_DIR / "bert" / "bert-base-portuguese-cased",
+    Languages.PT: "neuralmind/bert-base-portuguese-cased",
 }
 
 # 言語ごとのデフォルトの BERT モデル (ONNX 版) のパス

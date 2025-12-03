@@ -85,9 +85,13 @@ def load_model(
 
     # pretrained_model_name_or_path が指定されていない場合はデフォルトのパスを利用
     if pretrained_model_name_or_path is None:
-        assert DEFAULT_BERT_MODEL_PATHS[language].exists(), \
-            f"The default {language.name} BERT model does not exist on the file system. Please specify the path to the pre-trained model."  # fmt: skip
-        pretrained_model_name_or_path = str(DEFAULT_BERT_MODEL_PATHS[language])
+        default_path = DEFAULT_BERT_MODEL_PATHS[language]
+        if isinstance(default_path, str):
+            pretrained_model_name_or_path = default_path
+        else:
+            assert default_path.exists(), \
+                f"The default {language.name} BERT model does not exist on the file system. Please specify the path to the pre-trained model."  # fmt: skip
+            pretrained_model_name_or_path = str(default_path)
 
     # BERT モデルをロードし、辞書に格納して返す
     ## 英語のみ DebertaV2Model でロードする必要がある
@@ -151,14 +155,18 @@ def load_tokenizer(
 
     # pretrained_model_name_or_path が指定されていない場合はデフォルトのパスを利用
     if pretrained_model_name_or_path is None:
-        # ライブラリ利用時、特例的にこの状況で ONNX 版 BERT トークナイザーがロードされている場合はそのまま返す
-        ## ONNX 版 BERT トークナイザー単独で g2p 処理を行うために必要 (各言語の g2p.py はこの関数に依存している)
-        ## 設計的には微妙だがこの方が差異を吸収できて手っ取り早い
-        if DEFAULT_BERT_MODEL_PATHS[language].exists() is False and onnx_bert_models.is_tokenizer_loaded(language):  # fmt: skip
-            return onnx_bert_models.load_tokenizer(language)
-        assert DEFAULT_BERT_MODEL_PATHS[language].exists(), \
-            f"The default {language.name} BERT tokenizer does not exist on the file system. Please specify the path to the pre-trained model."  # fmt: skip
-        pretrained_model_name_or_path = str(DEFAULT_BERT_MODEL_PATHS[language])
+        default_path = DEFAULT_BERT_MODEL_PATHS[language]
+        if isinstance(default_path, str):
+             pretrained_model_name_or_path = default_path
+        else:
+            # ライブラリ利用時、特例的にこの状況で ONNX 版 BERT トークナイザーがロードされている場合はそのまま返す
+            ## ONNX 版 BERT トークナイザー単独で g2p 処理を行うために必要 (各言語の g2p.py はこの関数に依存している)
+            ## 設計的には微妙だがこの方が差異を吸収できて手っ取り早い
+            if default_path.exists() is False and onnx_bert_models.is_tokenizer_loaded(language):  # fmt: skip
+                return onnx_bert_models.load_tokenizer(language)
+            assert default_path.exists(), \
+                f"The default {language.name} BERT tokenizer does not exist on the file system. Please specify the path to the pre-trained model."  # fmt: skip
+            pretrained_model_name_or_path = str(default_path)
 
     # BERT トークナイザーをロードし、辞書に格納して返す
     ## 英語のみ DebertaV2TokenizerFast でロードする必要がある

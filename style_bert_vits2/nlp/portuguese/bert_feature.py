@@ -43,6 +43,6 @@ def extract_bert_feature(
         size=total_phones, 
         mode='linear', 
         align_corners=True
-    ).squeeze(0).transpose(0, 1) # [total_phones, hidden_size]
+    ).squeeze(0) # [hidden_size, total_phones]
 
     return res

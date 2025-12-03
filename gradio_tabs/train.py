@@ -180,13 +180,13 @@ def preprocess_text(
 
     cmd = [
         "preprocess_text.py",
-        "--metadata",
+        "--transcription-path",
         str(paths.esd_path),
-        "--train_config",
+        "--config-path",
         str(paths.config_path),
-        "--val_per_spk",
+        "--val-per-lang",
         str(val_per_spk),
-        "--val_max",
+        "--max-val-total",
         str(max_val_total),
     ]
     if clean:

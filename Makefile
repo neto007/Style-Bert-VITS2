@@ -5,6 +5,7 @@ help:
 	@echo "  make install-system  - Instala dependências do sistema (espeak-ng)"
 	@echo "  make install-deps    - Instala dependências Python com uv"
 	@echo "  make run             - Inicia a aplicação"
+	@echo "  make initialize      - Baixa os modelos pré-treinados necessários"
 	@echo "  make clean           - Limpa arquivos temporários"
 
 install-system:
@@ -30,3 +31,7 @@ run:
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
+
+initialize:
+	@echo "Baixando modelos pré-treinados..."
+	uv run python initialize.py

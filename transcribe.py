@@ -58,7 +58,10 @@ def transcribe_files_with_hf_whisper(
     pbar: Optional[tqdm] = None,
 ) -> list[str]:
     import torch
+    import transformers
     from transformers import WhisperProcessor, pipeline
+
+    # transformers.utils.logging.set_verbosity_info()
 
     processor: WhisperProcessor = WhisperProcessor.from_pretrained(model_id)
     generate_kwargs: dict[str, Any] = {
@@ -67,7 +70,7 @@ def transcribe_files_with_hf_whisper(
         "num_beams": num_beams,
         "no_repeat_ngram_size": no_repeat_ngram_size,
     }
-    logger.info(f"generate_kwargs: {generate_kwargs}, loading pipeline...")
+    logger.info(f"generate_kwargs: {generate_kwargs}, loading pipeline on device: {device}...")
     pipe = pipeline(
         model=model_id,
         max_new_tokens=128,
@@ -122,7 +125,7 @@ if __name__ == "__main__":
         default="こんにちは。元気、ですかー？ふふっ、私は……ちゃんと元気だよ！",
     )
     parser.add_argument(
-        "--language", type=str, default="ja", choices=["ja", "en", "zh"]
+        "--language", type=str, default="ja", choices=["ja", "en", "zh", "pt"]
     )
     parser.add_argument("--model", type=str, default="large-v3")
     parser.add_argument("--device", type=str, default="cuda")
@@ -173,6 +176,8 @@ if __name__ == "__main__":
         language_id = Languages.EN.value
     elif language == "zh":
         language_id = Languages.ZH.value
+    elif language == "pt":
+        language_id = Languages.PT.value
     else:
         raise ValueError(f"{language} is not supported.")
 

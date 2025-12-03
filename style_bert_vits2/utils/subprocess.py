@@ -24,14 +24,14 @@ def run_script_with_log(
     result = subprocess.run(
         [sys.executable] + cmd,
         stdout=SAFE_STDOUT,
-        stderr=subprocess.PIPE,
+        stderr=sys.stderr,
         text=True,
         encoding="utf-8",
         check=False,
     )
     if result.returncode != 0:
-        logger.error(f"Error: {' '.join(cmd)}\n{result.stderr}")
-        return False, result.stderr
+        logger.error(f"Error: {' '.join(cmd)}\nCheck console for details.")
+        return False, "Check console for details."
     elif result.stderr and not ignore_warning:
         logger.warning(f"Warning: {' '.join(cmd)}\n{result.stderr}")
         return True, result.stderr

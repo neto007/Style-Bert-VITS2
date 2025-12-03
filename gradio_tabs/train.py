@@ -54,10 +54,13 @@ def initialize(
     freeze_EN_bert: bool,
     freeze_JP_bert: bool,
     freeze_ZH_bert: bool,
+    freeze_PT_bert: bool,
     freeze_style: bool,
     freeze_decoder: bool,
     use_jp_extra: bool,
     log_interval: int,
+    bf16_run: bool = False,
+    fp16_run: bool = True,
 ):
     global logger_handler
     paths = get_path(model_name)
@@ -70,7 +73,7 @@ def initialize(
     logger_handler = logger.add(paths.dataset_path / file_name)
 
     logger.info(
-        f"Step 1: start initialization...\nmodel_name: {model_name}, batch_size: {batch_size}, epochs: {epochs}, save_every_steps: {save_every_steps}, freeze_ZH_bert: {freeze_ZH_bert}, freeze_JP_bert: {freeze_JP_bert}, freeze_EN_bert: {freeze_EN_bert}, freeze_style: {freeze_style}, freeze_decoder: {freeze_decoder}, use_jp_extra: {use_jp_extra}"
+        f"Step 1: start initialization...\nmodel_name: {model_name}, batch_size: {batch_size}, epochs: {epochs}, save_every_steps: {save_every_steps}, freeze_ZH_bert: {freeze_ZH_bert}, freeze_JP_bert: {freeze_JP_bert}, freeze_EN_bert: {freeze_EN_bert}, freeze_PT_bert: {freeze_PT_bert}, freeze_style: {freeze_style}, freeze_decoder: {freeze_decoder}, use_jp_extra: {use_jp_extra}"
     )
 
     default_config_path = (
@@ -90,10 +93,12 @@ def initialize(
     config["train"]["freeze_EN_bert"] = freeze_EN_bert
     config["train"]["freeze_JP_bert"] = freeze_JP_bert
     config["train"]["freeze_ZH_bert"] = freeze_ZH_bert
+    config["train"]["freeze_PT_bert"] = freeze_PT_bert
     config["train"]["freeze_style"] = freeze_style
     config["train"]["freeze_decoder"] = freeze_decoder
 
-    config["train"]["bf16_run"] = False  # Deve ser False por padrão, mas por precaução
+    config["train"]["bf16_run"] = bf16_run
+    config["train"]["fp16_run"] = fp16_run
 
     # Atualmente é padrão, mas antes não estava na versão não JP-Extra e causava bugs, então por precaução
     config["data"]["use_jp_extra"] = use_jp_extra
@@ -248,6 +253,7 @@ def preprocess_all(
     freeze_EN_bert: bool,
     freeze_JP_bert: bool,
     freeze_ZH_bert: bool,
+    freeze_PT_bert: bool,
     freeze_style: bool,
     freeze_decoder: bool,
     use_jp_extra: bool,
@@ -262,8 +268,8 @@ def preprocess_all(
         return "Erro: Por favor, insira o nome do modelo"
 
     # Verificar se config.json existe
-    if not (dataset_root / model_name / "config.json").exists():
-        return "Erro: O arquivo de configuração não foi encontrado. Por favor, execute o pré-processamento primeiro."
+    # if not (dataset_root / model_name / "config.json").exists():
+    #     return "Erro: O arquivo de configuração não foi encontrado. Por favor, execute o pré-processamento primeiro."
 
     message = initialize(
         model_name=model_name,
@@ -273,6 +279,7 @@ def preprocess_all(
         freeze_EN_bert=freeze_EN_bert,
         freeze_JP_bert=freeze_JP_bert,
         freeze_ZH_bert=freeze_ZH_bert,
+        freeze_PT_bert=freeze_PT_bert,
         freeze_style=freeze_style,
         freeze_decoder=freeze_decoder,
         use_jp_extra=use_jp_extra,
@@ -539,6 +546,10 @@ def create_train_app():
                             label="Congelar BERT em chinês",
                             value=False,
                         )
+                        freeze_PT_bert = gr.Checkbox(
+                            label="Congelar BERT em português",
+                            value=False,
+                        )
                         freeze_style = gr.Checkbox(
                             label="Congelar parte de estilo",
                             value=False,
@@ -608,6 +619,10 @@ def create_train_app():
                 )
                 freeze_ZH_bert_manual = gr.Checkbox(
                     label="Congelar BERT em chinês",
+                    value=False,
+                )
+                freeze_PT_bert_manual = gr.Checkbox(
+                    label="Congelar BERT em português",
                     value=False,
                 )
                 freeze_style_manual = gr.Checkbox(
@@ -729,6 +744,7 @@ def create_train_app():
                 freeze_EN_bert,
                 freeze_JP_bert,
                 freeze_ZH_bert,
+                freeze_PT_bert,
                 freeze_style,
                 freeze_decoder,
                 use_jp_extra,
@@ -753,6 +769,7 @@ def create_train_app():
                 freeze_EN_bert_manual,
                 freeze_JP_bert_manual,
                 freeze_ZH_bert_manual,
+                freeze_PT_bert_manual,
                 freeze_style_manual,
                 freeze_decoder_manual,
                 use_jp_extra_manual,

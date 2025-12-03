@@ -59,6 +59,7 @@ dependencies = [
     "sentencepiece",
     "soxr",
     "torchvision",
+    "phonemizer",
 ]
 
 [project.optional-dependencies]

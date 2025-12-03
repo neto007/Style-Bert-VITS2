@@ -165,19 +165,30 @@ EN_SYMBOLS = [
     "y",
     "z",
     "zh",
+    "AA",
+    "EE",
+    "OO",
 ]
 NUM_EN_TONES = 4
 
+# Portuguese
+# Baseado no phonemizer (espeak-ng)
+PT_SYMBOLS = [
+    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "s", "t", "u", "v", "w", "x", "z",
+    "ɐ", "ɑ", "ɔ", "ɛ", "ɜ", "ɡ", "ɪ", "ɫ", "ɲ", "ɾ", "ʃ", "ʊ", "ʎ", "ʒ", "ʔ", "ˈ", "ˌ", "ː", "̃", "ĩ", "õ", "ũ", "ẽ", "j̃", "w̃"
+]
+NUM_PT_TONES = 1 # Apenas para compatibilidade, acentuação já está nos símbolos
+
 # Combine all symbols
-NORMAL_SYMBOLS = sorted(set(ZH_SYMBOLS + JP_SYMBOLS + EN_SYMBOLS))
+NORMAL_SYMBOLS = sorted(set(ZH_SYMBOLS + JP_SYMBOLS + EN_SYMBOLS + PT_SYMBOLS))
 SYMBOLS = [PAD] + NORMAL_SYMBOLS + PUNCTUATION_SYMBOLS
 SIL_PHONEMES_IDS = [SYMBOLS.index(i) for i in PUNCTUATION_SYMBOLS]
 
 # Combine all tones
-NUM_TONES = NUM_ZH_TONES + NUM_JP_TONES + NUM_EN_TONES
+NUM_TONES = NUM_ZH_TONES + NUM_JP_TONES + NUM_EN_TONES + NUM_PT_TONES
 
 # Language maps
-LANGUAGE_ID_MAP = {"ZH": 0, "JP": 1, "EN": 2}
+LANGUAGE_ID_MAP = {"ZH": 0, "JP": 1, "EN": 2, "PT": 3}
 NUM_LANGUAGES = len(LANGUAGE_ID_MAP.keys())
 
 # Language tone start map
@@ -185,6 +196,7 @@ LANGUAGE_TONE_START_MAP = {
     "ZH": 0,
     "JP": NUM_ZH_TONES,
     "EN": NUM_ZH_TONES + NUM_JP_TONES,
+    "PT": NUM_ZH_TONES + NUM_JP_TONES + NUM_EN_TONES,
 }
 
 

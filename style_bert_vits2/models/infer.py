@@ -144,15 +144,19 @@ def get_text(
         ja_bert = torch.zeros(1024, len(phone))
         en_bert = torch.zeros(1024, len(phone))
     elif language_str == Languages.JP:
-        bert = torch.zeros(1024, len(phone))
+        bert = torch.zeros(768, len(phone))
         ja_bert = bert_ori
         en_bert = torch.zeros(1024, len(phone))
     elif language_str == Languages.EN:
-        bert = torch.zeros(1024, len(phone))
+        bert = torch.zeros(768, len(phone))
         ja_bert = torch.zeros(1024, len(phone))
         en_bert = bert_ori
+    elif language_str == Languages.PT:
+        bert = bert_ori
+        ja_bert = torch.zeros(1024, len(phone))
+        en_bert = torch.zeros(1024, len(phone))
     else:
-        raise ValueError("language_str should be ZH, JP or EN")
+        raise ValueError("language_str should be ZH, JP, EN or PT")
 
     assert bert.shape[-1] == len(
         phone

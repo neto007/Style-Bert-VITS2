@@ -80,15 +80,19 @@ def get_text_onnx(
         ja_bert = np.zeros((1024, len(phone)), dtype=np.float32)
         en_bert = np.zeros((1024, len(phone)), dtype=np.float32)
     elif language_str == Languages.JP:
-        bert = np.zeros((1024, len(phone)), dtype=np.float32)
+        bert = np.zeros((768, len(phone)), dtype=np.float32)
         ja_bert = bert_ori
         en_bert = np.zeros((1024, len(phone)), dtype=np.float32)
     elif language_str == Languages.EN:
-        bert = np.zeros((1024, len(phone)), dtype=np.float32)
+        bert = np.zeros((768, len(phone)), dtype=np.float32)
         ja_bert = np.zeros((1024, len(phone)), dtype=np.float32)
         en_bert = bert_ori
+    elif language_str == Languages.PT:
+        bert = bert_ori
+        ja_bert = np.zeros((1024, len(phone)), dtype=np.float32)
+        en_bert = np.zeros((1024, len(phone)), dtype=np.float32)
     else:
-        raise ValueError("language_str should be ZH, JP or EN")
+        raise ValueError("language_str should be ZH, JP, EN or PT")
 
     assert bert.shape[-1] == len(
         phone

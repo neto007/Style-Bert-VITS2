@@ -101,17 +101,10 @@ call ".\venv\Scripts\activate.bat"
 if !errorlevel! neq 0 ( popd & exit /b !errorlevel! )
 
 echo --------------------------------------------------
-echo Installing package manager uv...
-echo --------------------------------------------------
-echo Executing: pip install uv
-pip install uv
-if !errorlevel! neq 0 ( pause & popd & exit /b !errorlevel! )
-
-echo --------------------------------------------------
 echo Installing dependencies...
 echo --------------------------------------------------
-echo Executing: uv pip install -r requirements-infer.txt
-uv pip install -r requirements-infer.txt
+echo Executing: ..\lib\uv\uv.exe pip install -r requirements-infer.txt
+..\lib\uv\uv.exe pip install -r requirements-infer.txt
 if !errorlevel! neq 0 ( pause & popd & exit /b !errorlevel! )
 
 echo ----------------------------------------

@@ -66,24 +66,25 @@ if not exist "%PYTHON_DIR%"\ (
 	if !errorlevel! neq 0 ( pause & exit /b !errorlevel! )
 
 	echo --------------------------------------------------
-	echo Downloading get-pip.py...
+	echo Downloading uv...
 	echo --------------------------------------------------
-	echo Executing: %CURL_CMD% -o "%PYTHON_DIR%\get-pip.py" https://bootstrap.pypa.io/get-pip.py
-	%CURL_CMD% -o "%PYTHON_DIR%\get-pip.py" https://bootstrap.pypa.io/get-pip.py
+	if not exist "%~dp0lib\uv" mkdir "%~dp0lib\uv"
+	echo Executing: %CURL_CMD% -L -o uv.zip https://github.com/astral-sh/uv/releases/latest/download/uv-x86_64-pc-windows-msvc.zip
+	%CURL_CMD% -L -o uv.zip https://github.com/astral-sh/uv/releases/latest/download/uv-x86_64-pc-windows-msvc.zip
 	if !errorlevel! neq 0 ( pause & exit /b !errorlevel! )
 
 	echo --------------------------------------------------
-	echo Installing pip...
+	echo Extracting uv...
 	echo --------------------------------------------------
-	echo Executing: "%PYTHON_CMD%" "%PYTHON_DIR%\get-pip.py" --no-warn-script-location
-	"%PYTHON_CMD%" "%PYTHON_DIR%\get-pip.py" --no-warn-script-location
+	echo Executing: %PS_CMD% Expand-Archive -Path uv.zip -DestinationPath \"%~dp0lib\uv\" -Force
+	%PS_CMD% Expand-Archive -Path uv.zip -DestinationPath \"%~dp0lib\uv\" -Force
 	if !errorlevel! neq 0 ( pause & exit /b !errorlevel! )
 
 	echo --------------------------------------------------
-	echo Installing virtualenv...
+	echo Removing uv.zip...
 	echo --------------------------------------------------
-	echo Executing: "%PYTHON_CMD%" -m pip install virtualenv --no-warn-script-location
-	"%PYTHON_CMD%" -m pip install virtualenv --no-warn-script-location
+	echo Executing: del uv.zip
+	del uv.zip
 	if !errorlevel! neq 0 ( pause & exit /b !errorlevel! )
 )
 
@@ -91,8 +92,8 @@ if not exist %VENV_DIR%\ (
 	echo --------------------------------------------------
 	echo Creating virtual environment...
 	echo --------------------------------------------------
-	echo Executing: "%PYTHON_CMD%" -m virtualenv --copies "%VENV_DIR%"
-	"%PYTHON_CMD%" -m virtualenv --copies "%VENV_DIR%"
+	echo Executing: "%~dp0lib\uv\uv.exe" venv "%VENV_DIR%" --python "%PYTHON_CMD%"
+	"%~dp0lib\uv\uv.exe" venv "%VENV_DIR%" --python "%PYTHON_CMD%"
 	if !errorlevel! neq 0 ( pause & exit /b !errorlevel! )
 )
 

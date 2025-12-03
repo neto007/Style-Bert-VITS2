@@ -101,24 +101,17 @@ call ".\venv\Scripts\activate.bat"
 if !errorlevel! neq 0 ( popd & exit /b !errorlevel! )
 
 echo --------------------------------------------------
-echo Installing package manager uv...
-echo --------------------------------------------------
-echo Executing: pip install uv
-pip install uv
-if !errorlevel! neq 0 ( pause & popd & exit /b !errorlevel! )
-
-echo --------------------------------------------------
 echo Installing PyTorch...
 echo --------------------------------------------------
-echo Executing: uv pip install "torch<2.4" "torchaudio<2.4" --index-url https://download.pytorch.org/whl/cu118
-uv pip install "torch<2.4" "torchaudio<2.4" --index-url https://download.pytorch.org/whl/cu118
+echo Executing: ..\lib\uv\uv.exe pip install "torch<2.4" "torchaudio<2.4" --index-url https://download.pytorch.org/whl/cu118
+..\lib\uv\uv.exe pip install "torch<2.4" "torchaudio<2.4" --index-url https://download.pytorch.org/whl/cu118
 if !errorlevel! neq 0 ( pause & popd & exit /b !errorlevel! )
 
 echo --------------------------------------------------
 echo Installing other dependencies...
 echo --------------------------------------------------
-echo Executing: uv pip install -r requirements.txt
-uv pip install -r requirements.txt
+echo Executing: ..\lib\uv\uv.exe pip install -r requirements.txt
+..\lib\uv\uv.exe pip install -r requirements.txt
 if !errorlevel! neq 0 ( pause & popd & exit /b !errorlevel! )
 
 echo ----------------------------------------

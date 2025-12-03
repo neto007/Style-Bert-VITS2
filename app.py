@@ -18,10 +18,10 @@ from style_bert_vits2.tts_model import TTSModelHolder
 from style_bert_vits2.utils import torch_device_to_onnx_providers
 
 
-# このプロセスからはワーカーを起動して辞書を使いたいので、ここで初期化
+# Inicializar pyopenjtalk worker
 pyopenjtalk_worker.initialize_worker()
 
-# dict_data/ 以下の辞書データを pyopenjtalk に適用
+# Aplicar dicionário de usuário
 update_dict()
 
 
@@ -52,17 +52,17 @@ model_holder = TTSModelHolder(
 with gr.Blocks(theme=GRADIO_THEME) as app:
     gr.Markdown(f"# Style-Bert-VITS2 WebUI (version {VERSION})")
     with gr.Tabs():
-        with gr.Tab("音声合成"):
+        with gr.Tab("Síntese de Voz"):
             create_inference_app(model_holder=model_holder)
-        with gr.Tab("データセット作成"):
+        with gr.Tab("Criação de Dataset"):
             create_dataset_app()
-        with gr.Tab("学習"):
+        with gr.Tab("Treinamento"):
             create_train_app()
-        with gr.Tab("スタイル作成"):
+        with gr.Tab("Criação de Estilo"):
             create_style_vectors_app()
-        with gr.Tab("マージ"):
+        with gr.Tab("Fusão"):
             create_merge_app(model_holder=model_holder)
-        with gr.Tab("ONNX変換"):
+        with gr.Tab("Conversão ONNX"):
             create_onnx_app(model_holder=model_holder)
 
 app.launch(

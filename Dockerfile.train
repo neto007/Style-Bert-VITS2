@@ -16,6 +16,7 @@
 
 # Ubuntu 22.04 as base image
 FROM ubuntu:22.04
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 # RUN yes| unminimize
 
 # Set ENV variables
@@ -24,7 +25,7 @@ ENV SHELL=/bin/bash
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV APT_INSTALL="apt-get install -y --no-install-recommends"
-ENV PIP_INSTALL="python3 -m pip --no-cache-dir install --upgrade"
+ENV PIP_INSTALL="uv pip install --system --upgrade"
 ENV GIT_CLONE="git clone --depth 10"
 
 # ==================================================================

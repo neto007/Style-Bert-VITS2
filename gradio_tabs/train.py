@@ -190,7 +190,7 @@ def preprocess_text(
         str(max_val_total),
     ]
     if clean:
-        cmd.append("--clean")
+        cmd.extend(["--yomi_error", "skip"])
     if use_jp_extra:
         cmd.append("--use_jp_extra")
     success, message = run_script_with_log(cmd)

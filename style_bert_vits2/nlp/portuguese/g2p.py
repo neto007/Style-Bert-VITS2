@@ -1,19 +1,29 @@
-import phonemizer
+from phonemizer.backend import EspeakBackend
 from style_bert_vits2.nlp.symbols import PT_SYMBOLS, PUNCTUATION_SYMBOLS
+
+# Initialize backend once
+_backend = None
+
+def get_backend():
+    global _backend
+    if _backend is None:
+        _backend = EspeakBackend(
+            language='pt-br',
+            preserve_punctuation=True,
+            with_stress=True
+        )
+    return _backend
 
 def g2p(text: str) -> tuple[list[str], list[int], list[int]]:
     """
     Converte texto em fonemas usando phonemizer (espeak-ng backend)
     """
     # Converter para fonemas
-    phones_str = phonemizer.phonemize(
-        text,
-        language='pt-br',
-        backend='espeak',
-        strip=True,
-        preserve_punctuation=True,
-        with_stress=True
-    )
+    backend = get_backend()
+    phones_str = backend.phonemize(
+        [text],
+        strip=True
+    )[0]
     
     phones = []
     tones = []

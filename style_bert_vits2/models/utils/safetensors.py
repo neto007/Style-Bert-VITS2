@@ -34,6 +34,22 @@ def load_safetensors(
                 iteration = f.get_tensor(key).item()
             tensors[key] = f.get_tensor(key)
     if hasattr(model, "module"):
+        model_state_dict = model.module.state_dict()
+    else:
+        model_state_dict = model.state_dict()
+
+    # Filter out size mismatches
+    keys_to_remove = []
+    for k, v in tensors.items():
+        if k in model_state_dict:
+            if v.shape != model_state_dict[k].shape:
+                logger.warning(f"Size mismatch for {k}: checkpoint {v.shape} != model {model_state_dict[k].shape}. Skipping.")
+                keys_to_remove.append(k)
+    
+    for k in keys_to_remove:
+        del tensors[k]
+
+    if hasattr(model, "module"):
         result = model.module.load_state_dict(tensors, strict=False)
     else:
         result = model.load_state_dict(tensors, strict=False)
